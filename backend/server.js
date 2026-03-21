@@ -1,8 +1,10 @@
 // Import required packages
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const connectDB = require('./config/db');
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import roomRoutes from './routes/roomRoutes.js';
+import connectDB from './config/db.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -12,6 +14,7 @@ connectDB();
 
 // Initialize Express app
 const app = express();
+
 
 // ============================================
 // MIDDLEWARE
@@ -29,7 +32,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ============================================
-// ROUTES
+app.use('/api/rooms', roomRoutes);
 // ============================================
 
 // Root endpoint - test if API is running
