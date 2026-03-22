@@ -1,4 +1,5 @@
 import Room from '../models/roomModel.js';
+import { broadcastToRoom } from '../sse/roomSSE.js';
 
 // ─── Helper: Generate unique 6-char room code ───
 const generateRoomCode = async () => {
@@ -78,6 +79,12 @@ const joinRoom = async (req, res) => {
     room.lastActivity = Date.now();
     await room.save();
 
+    // Broadcast to all players in the room
+    broadcastToRoom(roomCode.toUpperCase(), {
+      type: 'player-joined',
+      players: room.players
+    });
+
     res.status(200).json({
       message: 'Joined room successfully',
       room
@@ -106,7 +113,7 @@ const getRoom = async (req, res) => {
   }
 };
 
-// ─── 4. LEAVE ROOM ───────────────────────────────
+// ─── 4. LEAVE ROOM ────────────────────────────────
 const leaveRoom = async (req, res) => {
   try {
     const { userId } = req.body;
@@ -134,6 +141,12 @@ const leaveRoom = async (req, res) => {
 
     await room.save();
 
+    // Broadcast to all players in the room
+    broadcastToRoom(roomCode.toUpperCase(), {
+      type: 'player-left',
+      players: room.players
+    });
+
     res.status(200).json({ message: 'Left room successfully', room });
 
   } catch (error) {
@@ -141,7 +154,7 @@ const leaveRoom = async (req, res) => {
   }
 };
 
-// ─── 5. START GAME ───────────────────────────────
+// ─── 5. START GAME ────────────────────────────────
 const startGame = async (req, res) => {
   try {
     const { userId } = req.body;
@@ -164,6 +177,12 @@ const startGame = async (req, res) => {
     room.status = 'in-progress';
     room.lastActivity = Date.now();
     await room.save();
+
+    // Broadcast game started to all players
+    broadcastToRoom(roomCode.toUpperCase(), {
+      type: 'game-started',
+      room
+    });
 
     res.status(200).json({ message: 'Game started!', room });
 
