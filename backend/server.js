@@ -3,7 +3,9 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import roomRoutes from './routes/roomRoutes.js';
+import userRoutes from "./routes/userRoutes.js";
+
+//import roomRoutes from './routes/roomRoutes.js';
 import connectDB from './config/db.js';
 
 // Load environment variables from .env file
@@ -14,7 +16,6 @@ connectDB();
 
 // Initialize Express app
 const app = express();
-
 
 // ============================================
 // MIDDLEWARE
@@ -30,9 +31,9 @@ app.use(express.json());
 
 // Parse URL-encoded bodies (for form submissions)
 app.use(express.urlencoded({ extended: true }));
-
+app.use("/api/users", userRoutes);
 // ============================================
-app.use('/api/rooms', roomRoutes);
+//app.use('/api/rooms', roomRoutes);
 // ============================================
 
 // Root endpoint - test if API is running
@@ -56,8 +57,6 @@ app.get('/api/health', (req, res) => {
 // ============================================
 // API ROUTES (will be added as we build)
 // ============================================
-
-
 
 // ============================================
 // ERROR HANDLING
