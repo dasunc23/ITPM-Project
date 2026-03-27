@@ -6,34 +6,62 @@ function Signup() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", password: "", campus: "", year: "", role: "user" });
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({ name: "", email: "", password: "", campus: "", year: "" });
 
   const validateEmail = (email) => {
     const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@\"]+\.)+[^<>()[\]\\.,;:\s@\"]{2,})$/i;
     return re.test(String(email).toLowerCase());
   };
 
+  const validateField = (name, value) => {
+    switch (name) {
+      case "name":
+        if (!value.trim()) return "Name is required.";
+        if (value.trim().length < 2) return "Name must be at least 2 characters.";
+        return "";
+      case "email":
+        if (!value.trim()) return "Email is required.";
+        if (!validateEmail(value)) return "Please enter a valid email address.";
+        return "";
+      case "password":
+        if (!value.trim()) return "Password is required.";
+        if (value.trim().length < 6) return "Password must be at least 6 characters.";
+        if (!/[0-9]/.test(value) || !/[A-Za-z]/.test(value)) return "Password must contain letters and numbers.";
+        return "";
+      case "campus":
+        if (!value.trim()) return "Campus is required.";
+        return "";
+      case "year":
+        if (!value) return "Year is required.";
+        return "";
+      default:
+        return "";
+    }
+  };
+
+  const handleFieldChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setFieldErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.name || !form.email || !form.password || !form.campus || !form.year) {
-      setError("All fields are required.");
+    const nameError = validateField("name", form.name);
+    const emailError = validateField("email", form.email);
+    const passwordError = validateField("password", form.password);
+    const campusError = validateField("campus", form.campus);
+    const yearError = validateField("year", form.year);
+
+    setFieldErrors({ name: nameError, email: emailError, password: passwordError, campus: campusError, year: yearError });
+
+    if (nameError || emailError || passwordError || campusError || yearError) {
+      setError("Please resolve the form errors before signing up.");
       return;
     }
 
-    if (!validateEmail(form.email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
-    if (form.password.length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
-    }
-
-    if (!/[0-9]/.test(form.password) || !/[A-Za-z]/.test(form.password)) {
-      setError("Password must contain letters and numbers.");
-      return;
-    }
+    setError("");
 
     try {
       const userData = { ...form, role: "user" };
@@ -62,49 +90,58 @@ function Signup() {
             <div style={{ marginBottom: "14px" }}>
               <label style={{ display: "block", marginBottom: "6px", fontWeight: 600, color: "#cbd5e1" }}>Name</label>
               <input
+                name="name"
                 type="text"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                style={{ width: "100%", padding: "10px 12px", border: "1px solid #475569", borderRadius: "8px", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
+                onChange={handleFieldChange}
+                style={{ width: "100%", padding: "10px 12px", border: fieldErrors.name ? "1px solid #f87171" : "1px solid #475569", borderRadius: "8px", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
                 required
               />
+              {fieldErrors.name && <p style={{ color: "#fecdd3", fontSize: "12px", marginTop: "6px" }}>{fieldErrors.name}</p>}
             </div>
             <div style={{ marginBottom: "14px" }}>
               <label style={{ display: "block", marginBottom: "6px", fontWeight: 600, color: "#cbd5e1" }}>Email</label>
               <input
+                name="email"
                 type="email"
                 value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                style={{ width: "100%", padding: "10px 12px", border: "1px solid #475569", borderRadius: "8px", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
+                onChange={handleFieldChange}
+                style={{ width: "100%", padding: "10px 12px", border: fieldErrors.email ? "1px solid #f87171" : "1px solid #475569", borderRadius: "8px", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
                 required
               />
+              {fieldErrors.email && <p style={{ color: "#fecdd3", fontSize: "12px", marginTop: "6px" }}>{fieldErrors.email}</p>}
             </div>
             <div style={{ marginBottom: "14px" }}>
               <label style={{ display: "block", marginBottom: "6px", fontWeight: 600, color: "#cbd5e1" }}>Password</label>
               <input
+                name="password"
                 type="password"
                 value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                style={{ width: "100%", padding: "10px 12px", border: "1px solid #475569", borderRadius: "8px", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
+                onChange={handleFieldChange}
+                style={{ width: "100%", padding: "10px 12px", border: fieldErrors.password ? "1px solid #f87171" : "1px solid #475569", borderRadius: "8px", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
                 required
               />
+              {fieldErrors.password && <p style={{ color: "#fecdd3", fontSize: "12px", marginTop: "6px" }}>{fieldErrors.password}</p>}
             </div>
             <div style={{ marginBottom: "14px" }}>
               <label style={{ display: "block", marginBottom: "6px", fontWeight: 600, color: "#cbd5e1" }}>Campus</label>
               <input
+                name="campus"
                 type="text"
                 value={form.campus}
-                onChange={(e) => setForm({ ...form, campus: e.target.value })}
-                style={{ width: "100%", padding: "10px 12px", border: "1px solid #475569", borderRadius: "8px", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
+                onChange={handleFieldChange}
+                style={{ width: "100%", padding: "10px 12px", border: fieldErrors.campus ? "1px solid #f87171" : "1px solid #475569", borderRadius: "8px", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
                 required
               />
+              {fieldErrors.campus && <p style={{ color: "#fecdd3", fontSize: "12px", marginTop: "6px" }}>{fieldErrors.campus}</p>}
             </div>
             <div style={{ marginBottom: "18px" }}>
               <label style={{ display: "block", marginBottom: "6px", fontWeight: 600, color: "#cbd5e1" }}>Year</label>
               <select
+                name="year"
                 value={form.year}
-                onChange={(e) => setForm({ ...form, year: e.target.value })}
-                style={{ width: "100%", padding: "10px 12px", border: "1px solid #475569", borderRadius: "8px", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
+                onChange={handleFieldChange}
+                style={{ width: "100%", padding: "10px 12px", border: fieldErrors.year ? "1px solid #f87171" : "1px solid #475569", borderRadius: "8px", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
                 required
               >
                 <option value="">Select year</option>

@@ -6,24 +6,47 @@ function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
 
   const validateEmail = (email) => {
     const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@\"]+\.)+[^<>()[\]\\.,;:\s@\"]{2,})$/i;
     return re.test(String(email).toLowerCase());
   };
 
+  const validateField = (name, value) => {
+    switch (name) {
+      case "email":
+        if (!value.trim()) return "Email is required.";
+        if (!validateEmail(value)) return "Please enter a valid email address.";
+        return "";
+      case "password":
+        if (!value.trim()) return "Password is required.";
+        if (value.trim().length < 6) return "Password must have at least 6 characters.";
+        return "";
+      default:
+        return "";
+    }
+  };
+
+  const handleFieldChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setFieldErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.email || !form.password) {
-      setError("Email and password are required.");
+    const emailError = validateField("email", form.email);
+    const passwordError = validateField("password", form.password);
+    setFieldErrors({ email: emailError, password: passwordError });
+
+    if (emailError || passwordError) {
+      setError("Please fix the highlighted fields before submitting.");
       return;
     }
 
-    if (!validateEmail(form.email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
+    setError("");
 
     // allow existing DB legacy passwords as-is; if you want stricter rules, enforce on signup only
 
@@ -65,23 +88,27 @@ function Login() {
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: "16px" }}>
               <input
+                name="email"
                 type="email"
                 value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                onChange={handleFieldChange}
                 placeholder="Email"
-                style={{ width: "100%", padding: "14px 14px", borderRadius: "32px", border: "1px solid #334155", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
+                style={{ width: "100%", padding: "14px 14px", borderRadius: "32px", border: fieldErrors.email ? "1px solid #f87171" : "1px solid #334155", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
                 required
               />
+              {fieldErrors.email && <p style={{ color: "#fecdd3", fontSize: "12px", marginTop: "6px" }}>{fieldErrors.email}</p>}
             </div>
             <div style={{ marginBottom: "16px" }}>
               <input
+                name="password"
                 type="password"
                 value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                onChange={handleFieldChange}
                 placeholder="Password"
-                style={{ width: "100%", padding: "14px 14px", borderRadius: "32px", border: "1px solid #334155", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
+                style={{ width: "100%", padding: "14px 14px", borderRadius: "32px", border: fieldErrors.password ? "1px solid #f87171" : "1px solid #334155", background: "#1f2937", color: "#e2e8f0", fontSize: "14px" }}
                 required
               />
+              {fieldErrors.password && <p style={{ color: "#fecdd3", fontSize: "12px", marginTop: "6px" }}>{fieldErrors.password}</p>}
             </div>
             <div style={{ marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <label style={{ color: "#94a3b8", fontSize: "13px" }}>
