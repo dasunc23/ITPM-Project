@@ -3,6 +3,9 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const semesterRoutes = require('./routes/semesterRoutes');
+const moduleRoutes = require('./routes/moduleRoutes');
+const gameRoutes = require('./routes/gameRoutes');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -34,7 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Root endpoint - test if API is running
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Moovie API is running!',
     version: '1.0.0',
     status: 'active'
@@ -43,7 +46,7 @@ app.get('/', (req, res) => {
 
 // Health check endpoint - useful for monitoring
 app.get('/api/health', (req, res) => {
-  res.json({ 
+  res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
@@ -51,10 +54,12 @@ app.get('/api/health', (req, res) => {
 });
 
 // ============================================
-// API ROUTES (will be added as we build)
+// API ROUTES (added feature routes)
 // ============================================
 
-
+app.use('/api/semesters', semesterRoutes);
+app.use('/api/modules', moduleRoutes);
+app.use('/api/games', gameRoutes);
 
 // ============================================
 // ERROR HANDLING
@@ -62,9 +67,9 @@ app.get('/api/health', (req, res) => {
 
 // 404 handler - catches requests to undefined routes
 app.use((req, res, next) => {
-  res.status(404).json({ 
+  res.status(404).json({
     success: false,
-    message: 'Route not found' 
+    message: 'Route not found'
   });
 });
 
