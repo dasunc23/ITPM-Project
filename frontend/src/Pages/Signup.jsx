@@ -18,6 +18,8 @@ function Signup() {
       case "name":
         if (!value.trim()) return "Name is required.";
         if (value.trim().length < 2) return "Name must be at least 2 characters.";
+        if (/[0-9]/.test(value)) return "Name cannot contain numbers.";
+        if (!/^[a-zA-Z\s'-]+$/.test(value.trim())) return "Name can only contain letters, spaces, apostrophes, and hyphens.";
         return "";
       case "email":
         if (!value.trim()) return "Email is required.";
@@ -77,7 +79,7 @@ function Signup() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", background: "#0a1a38", padding: "24px" }}>
       <div style={{ width: "100%", maxWidth: "920px", display: "grid", gridTemplateColumns: "1fr 1fr", borderRadius: "20px", overflow: "hidden", boxShadow: "0 30px 70px rgba(0,0,0,0.5)" }}>
-        <div style={{ background: "linear-gradient(130deg, #00a76f 0%, #01673a 100%)", color: "#fff", padding: "46px 32px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ background: "linear-gradient(130deg, #a855f7 0%, #ec4899 100%)", color: "#fff", padding: "46px 32px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <h1 style={{ margin: 0, fontSize: "34px", letterSpacing: "1px" }}>Welcome Back!</h1>
           <p style={{ margin: "12px 0 24px", fontSize: "16px", opacity: 0.9 }}>To stay connected with us, please login with your personal info.</p>
           
@@ -152,13 +154,13 @@ function Signup() {
               </select>
             </div>
             {error && <p style={{ color: "#fecdd3", marginBottom: "12px", textAlign: "center" }}>{error}</p>}
-            <button type="submit" style={{ width: "100%", background: "#10b981", color: "#fff", border: "none", padding: "14px", borderRadius: "32px", cursor: "pointer", fontWeight: 700, fontSize: "16px" }}>
+            <button type="submit" style={{ width: "100%", background: "#a855f7", color: "#fff", border: "none", padding: "14px", borderRadius: "32px", cursor: "pointer", fontWeight: 700, fontSize: "16px" }}>
               SIGN UP
             </button>
           </form>
 
           <p style={{ marginTop: "18px", color: "#94a3b8", textAlign: "center" }}>
-            Already have an account? <Link to="/login" style={{ color: "#10b981", fontWeight: 700 }}>Log in</Link>
+            Already have an account? <Link to="/login" style={{ color: "#a855f7", fontWeight: 700 }}>Log in</Link>
           </p>
         </div>
       </div>

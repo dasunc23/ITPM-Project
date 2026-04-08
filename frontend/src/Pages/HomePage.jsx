@@ -178,7 +178,7 @@ const HomePage = () => {
                 <h3 className="text-xl font-semibold text-white mb-2">{room.game}</h3>
                 <p className="text-gray-300 mb-2">Room Code: {room.code}</p>
                 <p className="text-gray-300 mb-4">Players: {room.players}</p>
-                <button className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full transition-colors">
+                <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded w-full transition-colors">
                   Join
                 </button>
               </div>
