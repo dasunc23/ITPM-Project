@@ -3,14 +3,13 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import userRoutes from "./routes/userRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 import roomRoutes from './routes/roomRoutes.js';
 import connectDB from './config/db.js';
 
 // Load environment variables from .env file
 dotenv.config();
-
-// Connect to MongoDB database
-connectDB();
 
 // Initialize Express app
 const app = express();
@@ -34,6 +33,9 @@ app.use(express.urlencoded({ extended: true }));
 // ============================================
 app.use('/api/rooms', roomRoutes);
 // ============================================
+app.use("/api/users", userRoutes);
+app.use("/api/payments", paymentRoutes);
+//app.use('/api/rooms', roomRoutes);
 
 // Root endpoint - test if API is running
 app.get('/', (req, res) => {
@@ -52,12 +54,6 @@ app.get('/api/health', (req, res) => {
     uptime: process.uptime()
   });
 });
-
-// ============================================
-// API ROUTES (will be added as we build)
-// ============================================
-
-
 
 // ============================================
 // ERROR HANDLING
@@ -89,14 +85,27 @@ app.use((err, req, res, next) => {
 // Get port from environment variable or use 5000 as default
 const PORT = process.env.PORT || 5000;
 
-// Start listening for requests
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+// Start server after connecting to database
+const startServer = async () => {
+  try {
+    // Connect to MongoDB
+    await connectDB();
+    
+    // Start listening for requests
+    const server = app.listen(PORT, () => {
+      console.log(`💻 Server is ready at http://localhost:${PORT}`);
+    });
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  console.error('❌ Unhandled Promise Rejection:', err);
-  // Close server & exit process
-  server.close(() => process.exit(1));
-});
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (err) => {
+      console.error('❌ Unhandled Promise Rejection:', err);
+      // Close server & exit process
+      server.close(() => process.exit(1));
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
