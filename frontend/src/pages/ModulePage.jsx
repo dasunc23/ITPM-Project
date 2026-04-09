@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import ErrorState from '../components/ErrorState'
-import GameCard from '../components/GameCard'
-import LoadingSpinner from '../components/LoadingSpinner'
-import PageHeader from '../components/PageHeader'
+import ErrorState from '../Components/ErrorState'
+import GameCard from '../Components/GameCard'
+import LoadingSpinner from '../Components/LoadingSpinner'
+import PageHeader from '../Components/PageHeader'
 import { semesterTwoFallbackGames, semesterTwoFallbackModule } from '../games/gameData'
 import { getGames, getModules } from '../services/api'
 

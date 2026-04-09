@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
-import PageHeader from '../components/PageHeader'
-import SemesterCard from '../components/SemesterCard'
+import PageHeader from '../Components/PageHeader'
+import SemesterCard from '../Components/SemesterCard'
 
 function SemesterPage() {
   const { year } = useParams()

@@ -3,55 +3,53 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
 import userRoutes from "./routes/userRoutes.js";
 import roomRoutes from './routes/roomRoutes.js';
 import connectDB from './config/db.js';
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const connectDB = require('./config/db');
-const semesterRoutes = require('./routes/semesterRoutes');
-const moduleRoutes = require('./routes/moduleRoutes');
-const gameRoutes = require('./routes/gameRoutes');
 
-// Load environment variables from .env file
+// ✅ FIXED imports
+import semesterRoutes from './routes/semesterRoutes.js';
+import moduleRoutes from './routes/moduleRoutes.js';
+import gameRoutes from './routes/gameRoutes.js';
+
+// Load environment variables
 dotenv.config();
 
-// Connect to MongoDB database
+// Connect DB
 connectDB();
 
-// Initialize Express app
+// Init app
 const app = express();
 
 // ============================================
 // MIDDLEWARE
 // ============================================
-
-// Enable CORS - allows frontend to communicate with backend
-// This permits requests from different origins (e.g., React dev server on port 3000)
 app.use(cors());
-
-// Parse JSON request bodies
-// This allows us to access req.body in our routes
 app.use(express.json());
-
-// Parse URL-encoded bodies (for form submissions)
 app.use(express.urlencoded({ extended: true }));
-app.use("/api/users", userRoutes);
-// ============================================
-app.use('/api/rooms', roomRoutes);
-// ============================================
 
-// Root endpoint - test if API is running
+// ============================================
+// ROUTES
+// ============================================
+app.use("/api/users", userRoutes);
+app.use('/api/rooms', roomRoutes);
+
+app.use('/api/semesters', semesterRoutes);
+app.use('/api/modules', moduleRoutes);
+app.use('/api/games', gameRoutes);
+
+// ============================================
+// TEST ROUTES
+// ============================================
 app.get('/', (req, res) => {
   res.json({
-    message: 'Moovie API is running!',
+    message: 'Game API is running!',
     version: '1.0.0',
     status: 'active'
   });
 });
 
-// Health check endpoint - useful for monitoring
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
@@ -61,51 +59,33 @@ app.get('/api/health', (req, res) => {
 });
 
 // ============================================
-// API ROUTES (added feature routes)
-// ============================================
-
-app.use('/api/semesters', semesterRoutes);
-app.use('/api/modules', moduleRoutes);
-app.use('/api/games', gameRoutes);
-
-// ============================================
 // ERROR HANDLING
 // ============================================
-
-// 404 handler - catches requests to undefined routes
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).json({
     success: false,
     message: 'Route not found'
   });
 });
 
-// Global error handler - catches all errors
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Internal server error',
-    // Only show error stack in development
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    message: err.message || 'Internal server error'
   });
 });
 
 // ============================================
 // START SERVER
 // ============================================
-
-// Get port from environment variable or use 5000 as default
 const PORT = process.env.PORT || 5000;
 
-// Start listening for requests
 const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 
-// Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.error('❌ Unhandled Promise Rejection:', err);
-  // Close server & exit process
   server.close(() => process.exit(1));
 });
