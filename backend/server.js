@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import userRoutes from "./routes/userRoutes.js";
 import roomRoutes from './routes/roomRoutes.js';
 import connectDB from './config/db.js';
 
@@ -14,7 +15,6 @@ connectDB();
 
 // Initialize Express app
 const app = express();
-
 
 // ============================================
 // MIDDLEWARE
@@ -30,7 +30,7 @@ app.use(express.json());
 
 // Parse URL-encoded bodies (for form submissions)
 app.use(express.urlencoded({ extended: true }));
-
+app.use("/api/users", userRoutes);
 // ============================================
 app.use('/api/rooms', roomRoutes);
 // ============================================
@@ -56,8 +56,6 @@ app.get('/api/health', (req, res) => {
 // ============================================
 // API ROUTES (will be added as we build)
 // ============================================
-
-
 
 // ============================================
 // ERROR HANDLING
