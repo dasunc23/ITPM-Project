@@ -6,6 +6,8 @@ import Home from './Pages/Home';
 import AdminDashboard from './Pages/AdminDashboard'; 
 import Login from './Pages/Login'; 
 import Signup from './Pages/Signup';
+import AnalyticsDashboard from "./Pages/AnalyticsDashboard";
+import PaymentPage from "./Pages/PaymentPage";
 
 // Dasun's pages 
 import CreateRoom from './Pages/CreateRoom';
@@ -40,6 +42,8 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/payment" element={<PaymentPage />} />
+      <Route path="/dashboard" element={<AnalyticsDashboard />} />
 
       <Route path="/create" element={<CreateRoom />} />
       <Route path="/join" element={<JoinRoom />} />

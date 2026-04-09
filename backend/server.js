@@ -3,6 +3,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import userRoutes from "./routes/userRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 import userRoutes from "./routes/userRoutes.js";
 import roomRoutes from './routes/roomRoutes.js';
@@ -30,9 +32,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ============================================
-// ROUTES
+// API ROUTES
 // ============================================
 app.use("/api/users", userRoutes);
+app.use("/api/payments", paymentRoutes);
+//app.use('/api/rooms', roomRoutes);
+
+// ============================================
+// ROUTES
+// ============================================
 app.use('/api/rooms', roomRoutes);
 
 app.use('/api/semesters', semesterRoutes);
