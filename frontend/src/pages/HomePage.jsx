@@ -1,5 +1,5 @@
-import PageHeader from '../components/PageHeader'
-import YearCard from '../components/YearCard'
+import PageHeader from '../Components/PageHeader'
+import YearCard from '../Components/YearCard'
 
 const years = [1, 2, 3]
 

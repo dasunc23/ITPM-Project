@@ -1,13 +1,14 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 function Sidebar({ menuItems = [] }) {
   const defaultMenuItems = [
     { label: "Home", href: "/home" },
     { label: "Dashboard", href: "/dashboard" },
     { label: "Users", href: "/admin" },
-    { label: "Rooms", href: "#" },
-    { label: "Games Category", href: "#" },
-    { label: "Achievements", href: "#" },
+    { label: "Rooms", href: "/admin/rooms" },
+    { label: "Games Category", href: "/admin/games-category" },
+    { label: "Achievements", href: "/admin/achievements" },
     { label: "Payment", href: "/payment" },
   ];
 
@@ -20,13 +21,14 @@ function Sidebar({ menuItems = [] }) {
         <ul className="space-y-2">
           {(menuItems.length ? menuItems : defaultMenuItems).map((item) => (
             <li key={item.label}>
-              <a
-                href={item.href}
+              <Link
+                to={item.href !== "#!" ? item.href : "#"}
+                onClick={item.href === "#!" ? (e) => e.preventDefault() : undefined}
                 className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
               >
                 <span className="mr-3">{item.icon}</span>
                 {item.label}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>

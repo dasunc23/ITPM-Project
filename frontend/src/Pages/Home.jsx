@@ -111,7 +111,7 @@ const Home = () => {
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight tracking-tight">COMPETE. LEARN. WIN.</h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-lg">Real-time multiplayer games for university students, engineered for speed, fairness and the thrill of competition.</p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/login" className="bg-gradient-to-r from-[#a855f7] to-[#ec4899] text-white px-8 py-4 rounded-full font-bold shadow-lg shadow-[#a855f7]/30 hover:shadow-[#a855f7]/70 transition-all duration-300">Start Playing</Link>
+              <Link to={isLoggedIn ? "/student-games" : "/login"} className="bg-gradient-to-r from-[#a855f7] to-[#ec4899] text-white px-8 py-4 rounded-full font-bold shadow-lg shadow-[#a855f7]/30 hover:shadow-[#a855f7]/70 transition-all duration-300">Start Playing</Link>
               <Link to="/signup" className="bg-white/10 border border-[#a855f7]/50 text-[#a855f7] px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-[#0a1a38] transition-all duration-300">Sign Up Free</Link>
             </div>
           </div>
@@ -142,16 +142,16 @@ const Home = () => {
           <h2 className="text-4xl font-bold text-center mb-16">Game Modes</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { title: 'Quiz Battle', description: 'Test your knowledge in real-time MCQ battles', icon: 'Q' },
-              { title: 'Typing Speed', description: 'Race against time in typing challenges', icon: 'T' },
-              { title: 'Coding Arena', description: 'Solve coding puzzles and compete', icon: 'C' },
-              { title: 'Memory Match', description: 'Challenge your memory with card matching', icon: 'M' },
+              { title: 'Quiz Battle', description: 'Test your knowledge in real-time MCQ battles', icon: 'Q', link: '/student-games/play/quiz' },
+              { title: 'Typing Speed', description: 'Race against time in typing challenges', icon: 'T', link: '/student-games/play/typing' },
+              { title: 'Coding Arena', description: 'Solve coding puzzles and compete', icon: 'C', link: '/student-games/play/coding' },
+              { title: 'Memory Match', description: 'Challenge your memory with card matching', icon: 'M', link: '/student-games/play/memory' },
             ].map((game, index) => (
               <div key={index} className="bg-white/10 backdrop-blur-lg border border-white/10 rounded-lg p-6 text-center hover:scale-105 transition-transform duration-300">
                 <div className="text-6xl font-bold text-[#a855f7] mb-4">{game.icon}</div>
                 <h3 className="text-xl font-semibold mb-2">{game.title}</h3>
                 <p className="text-gray-300 mb-4">{game.description}</p>
-                <button className="bg-[#a855f7] text-white px-6 py-2 rounded-full hover:bg-[#ec4899] transition-colors">Play Now</button>
+                <Link to={game.link} className="inline-block bg-[#a855f7] text-white px-6 py-2 rounded-full hover:bg-[#ec4899] transition-colors">Play Now</Link>
               </div>
             ))}
           </div>

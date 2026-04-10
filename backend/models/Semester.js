@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const semesterSchema = new mongoose.Schema(
   {
@@ -20,4 +20,4 @@ const semesterSchema = new mongoose.Schema(
 
 semesterSchema.index({ year: 1, semester: 1 }, { unique: true });
 
-module.exports = mongoose.model("Semester", semesterSchema);
+export default mongoose.model("Semester", semesterSchema);

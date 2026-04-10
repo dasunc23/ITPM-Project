@@ -1,7 +1,7 @@
-const Game = require("../models/Game");
-const Module = require("../models/Module");
+import Game from "../models/Game.js";
+import Module from "../models/Module.js";
 
-const getGames = async (req, res, next) => {
+export const getGames = async (req, res, next) => {
   try {
     const { module: moduleName, moduleId } = req.query;
     const query = {};
@@ -26,8 +26,4 @@ const getGames = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
-
-module.exports = {
-  getGames,
 };
