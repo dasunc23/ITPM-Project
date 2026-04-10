@@ -36,8 +36,8 @@ const Lobby = () => {
 
       if (data.type === 'game-started') {
         setGameStarted(true);
-        // Navigate to game page — update route when Member 2 is ready
-        setTimeout(() => navigate(`/game/${roomCode}`, { state }), 2000);
+        // Navigate to game page — using the broadcasted room's gametype
+        setTimeout(() => navigate(`/student-games/play/${data.room.gameType}`, { state: { ...state, room: data.room } }), 2000);
       }
     };
 

@@ -6,7 +6,6 @@ import dotenv from 'dotenv';
 import userRoutes from "./routes/userRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 
-import userRoutes from "./routes/userRoutes.js";
 import roomRoutes from './routes/roomRoutes.js';
 import connectDB from './config/db.js';
 

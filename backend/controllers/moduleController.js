@@ -1,7 +1,7 @@
-const Module = require("../models/Module");
-const Semester = require("../models/Semester");
+import Module from "../models/Module.js";
+import Semester from "../models/Semester.js";
 
-const getModules = async (req, res, next) => {
+export const getModules = async (req, res, next) => {
   try {
     const { year, semester } = req.query;
     const query = {};
@@ -29,6 +29,4 @@ const getModules = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  getModules,
-};
+
