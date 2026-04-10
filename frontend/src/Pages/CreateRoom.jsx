@@ -11,7 +11,6 @@ const CreateRoom = () => {
   // Read pre-selected game from URL query params (passed from GameCard)
   const preselectedGame = searchParams.get('game') || '';
   const preselectedGameName = searchParams.get('gameName') || '';
-
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -289,8 +288,8 @@ const CreateRoom = () => {
                           });
                         }}
                         className={`shrink-0 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg hover:scale-105 active:scale-95 transition-all shadow-md ${r.status === 'in-progress'
-                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-green-500/20'
-                            : 'bg-gradient-to-r from-[#a855f7] to-[#ec4899] shadow-[#a855f7]/20'
+                          ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-green-500/20'
+                          : 'bg-gradient-to-r from-[#a855f7] to-[#ec4899] shadow-[#a855f7]/20'
                           }`}
                       >
                         {r.status === 'in-progress' ? 'Resume Game 🎮' : 'Rejoin 🚀'}

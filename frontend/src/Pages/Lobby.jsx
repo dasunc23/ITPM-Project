@@ -24,7 +24,6 @@ const Lobby = () => {
   console.log("[Lobby] State Context:", { userId, username, isHost });
   console.log("[Lobby] Current Room:", room);
   console.log("[Lobby] Players:", players);
-
   // Generate random particle positions on mount
   useEffect(() => {
     const positions = Array.from({ length: 12 }, () => ({
