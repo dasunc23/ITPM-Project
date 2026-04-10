@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const connectDB = require("./config/db");
-const Semester = require("./models/Semester");
-const Module = require("./models/Module");
-const Game = require("./models/Game");
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import connectDB from "./config/db.js";
+import Semester from "./models/Semester.js";
+import Module from "./models/Module.js";
+import Game from "./models/Game.js";
 
 dotenv.config();
 

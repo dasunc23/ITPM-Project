@@ -50,7 +50,16 @@ const roomSchema = new mongoose.Schema({
   lastActivity: {
     type: Date,
     default: Date.now
+  },
+  // TTL field: waiting rooms auto-delete 5 min after creation.
+  // Set to a far-future date when game starts to cancel expiry.
+  expiresAt: {
+    type: Date,
+    default: () => new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
   }
 }, { timestamps: true });
+
+// MongoDB TTL index — removes document when expiresAt is reached
+roomSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model('Room', roomSchema);

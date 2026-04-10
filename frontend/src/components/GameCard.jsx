@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 function GameCard({ game, moduleItem, year = 3, semester = 2 }) {
   return (
     <Link
-      to={`/student-games/play/${game.type}`}
+      to={`/create?game=${game.type}&gameName=${encodeURIComponent(game.name)}`}
       state={{ game, module: moduleItem, year, semester }}
       className="glass-card glass-card-hover group overflow-hidden"
     >

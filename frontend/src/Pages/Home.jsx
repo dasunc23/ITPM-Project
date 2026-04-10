@@ -56,8 +56,9 @@ const Home = () => {
             <div className="flex items-center space-x-10">
               <div className="hidden md:flex space-x-8">
                 <Link to="/" className="hover:text-[#a855f7] transition-colors">Home</Link>
-                <a href="#games" className="hover:text-[#a855f7] transition-colors">Games</a>
+                <Link to="/gamehome" className="hover:text-[#a855f7] transition-colors">Games</Link>
                 <a href="#leaderboard" className="hover:text-[#a855f7] transition-colors">Leaderboard</a>
+                <Link to="/join" className="hover:text-[#a855f7] transition-colors">Join Game</Link>
                 {isLoggedIn && <Link to="/payment" className="hover:text-[#a855f7] transition-colors">Payment</Link>}
                 {userRole === "admin" && <Link to="/dashboard" className="hover:text-[#a855f7] transition-colors">Admin Dashboard</Link>}
               </div>
@@ -86,8 +87,9 @@ const Home = () => {
           {isMenuOpen && (
             <div className="md:hidden bg-white/10 backdrop-blur-lg mt-4 rounded-lg p-4">
               <Link to="/" className="block py-2 hover:text-[#a855f7] transition-colors">Home</Link>
-              <a href="#games" className="block py-2 hover:text-[#a855f7] transition-colors">Games</a>
+              <Link to="/gamehome" className="block py-2 hover:text-[#a855f7] transition-colors">Games</Link>
               <a href="#leaderboard" className="block py-2 hover:text-[#a855f7] transition-colors">Leaderboard</a>
+              <Link to="/join" className="block py-2 hover:text-[#a855f7] transition-colors">Join Game</Link>
               {isLoggedIn && <Link to="/payment" className="block py-2 hover:text-[#a855f7] transition-colors">Payment</Link>}
               {userRole === "admin" && <Link to="/dashboard" className="block py-2 hover:text-[#a855f7] transition-colors">Admin Dashboard</Link>}
               {isLoggedIn ? (
@@ -164,7 +166,7 @@ const Home = () => {
           <h2 className="text-4xl font-bold text-center mb-16">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { step: 1, title: 'Create or Join Room', description: 'Start a new game or join an existing room with friends', icon: '1' },
+              { step: 1, title: 'Create or Join Game', description: 'Start a new game or join an existing room with friends', icon: '1' },
               { step: 2, title: 'Play in Real-Time', description: 'Compete against other students in live multiplayer matches', icon: '2' },
               { step: 3, title: 'Earn Points & Rank', description: 'Win games to earn points and climb the leaderboard', icon: '3' },
             ].map((item, index) => (
