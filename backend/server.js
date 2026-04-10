@@ -1,21 +1,22 @@
 // Import required packages
 import express from 'express';
+import semesterRoutes from './routes/semesterRoutes.js';
+import moduleRoutes from './routes/moduleRoutes.js';
+import gameRoutes from './routes/gameRoutes.js';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import userRoutes from "./routes/userRoutes.js";
-
-//import roomRoutes from './routes/roomRoutes.js';
+import paymentRoutes from "./routes/paymentRoutes.js";
+import roomRoutes from './routes/roomRoutes.js';
 import connectDB from './config/db.js';
 
 // Load environment variables from .env file
 dotenv.config();
 
-// Connect to MongoDB database
-connectDB();
-
 // Initialize Express app
 const app = express();
+
 
 // ============================================
 // MIDDLEWARE
@@ -31,14 +32,17 @@ app.use(express.json());
 
 // Parse URL-encoded bodies (for form submissions)
 app.use(express.urlencoded({ extended: true }));
+
+// ============================================
+app.use('/api/rooms', roomRoutes);
+// ============================================
 app.use("/api/users", userRoutes);
-// ============================================
+app.use("/api/payments", paymentRoutes);
 //app.use('/api/rooms', roomRoutes);
-// ============================================
 
 // Root endpoint - test if API is running
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Moovie API is running!',
     version: '1.0.0',
     status: 'active'
@@ -47,7 +51,7 @@ app.get('/', (req, res) => {
 
 // Health check endpoint - useful for monitoring
 app.get('/api/health', (req, res) => {
-  res.json({ 
+  res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
@@ -55,8 +59,12 @@ app.get('/api/health', (req, res) => {
 });
 
 // ============================================
-// API ROUTES (will be added as we build)
+// API ROUTES (added feature routes)
 // ============================================
+
+app.use('/api/semesters', semesterRoutes);
+app.use('/api/modules', moduleRoutes);
+app.use('/api/games', gameRoutes);
 
 // ============================================
 // ERROR HANDLING
@@ -64,9 +72,9 @@ app.get('/api/health', (req, res) => {
 
 // 404 handler - catches requests to undefined routes
 app.use((req, res, next) => {
-  res.status(404).json({ 
+  res.status(404).json({
     success: false,
-    message: 'Route not found' 
+    message: 'Route not found'
   });
 });
 
@@ -88,14 +96,27 @@ app.use((err, req, res, next) => {
 // Get port from environment variable or use 5000 as default
 const PORT = process.env.PORT || 5000;
 
-// Start listening for requests
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+// Start server after connecting to database
+const startServer = async () => {
+  try {
+    // Connect to MongoDB
+    await connectDB();
+    
+    // Start listening for requests
+    const server = app.listen(PORT, () => {
+      console.log(`💻 Server is ready at http://localhost:${PORT}`);
+    });
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  console.error('❌ Unhandled Promise Rejection:', err);
-  // Close server & exit process
-  server.close(() => process.exit(1));
-});
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (err) => {
+      console.error('❌ Unhandled Promise Rejection:', err);
+      // Close server & exit process
+      server.close(() => process.exit(1));
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error.message);
+    process.exit(1);
+  }
+};
+
+startServer();

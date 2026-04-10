@@ -1,3 +1,129 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --font-display: "Poppins", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+  --color-platform-text: #e2e8f0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  font-family: var(--font-body);
+  color: var(--color-platform-text);
+  background:
+    radial-gradient(circle at top left, rgba(129, 140, 248, 0.28), transparent 28%),
+    radial-gradient(circle at top right, rgba(168, 85, 247, 0.22), transparent 24%),
+    linear-gradient(180deg, #020617 0%, #0f172a 48%, #111827 100%);
+  background-attachment: fixed;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply relative min-h-screen overflow-hidden;
+  }
+
+  .app-shell::before,
+  .app-shell::after {
+    content: "";
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(90px);
+    z-index: 0;
+  }
+
+  .app-shell::before {
+    width: 280px;
+    height: 280px;
+    top: 48px;
+    left: -60px;
+    background: rgba(99, 102, 241, 0.32);
+  }
+
+  .app-shell::after {
+    width: 360px;
+    height: 360px;
+    right: -100px;
+    top: 240px;
+    background: rgba(168, 85, 247, 0.24);
+  }
+
+  .page-wrap {
+    @apply relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-8 sm:px-6 lg:px-8;
+  }
+
+  .glass-card {
+    @apply rounded-2xl border border-white/15 bg-white/10 shadow-2xl backdrop-blur-lg transition-all duration-300;
+  }
+
+  .glass-card-hover {
+    @apply hover:-translate-y-1.5 hover:scale-[1.02] hover:border-indigo-300/40 hover:shadow-indigo-500/20;
+  }
+
+  .hero-panel {
+    @apply relative overflow-hidden rounded-2xl border border-white/15 bg-white/10 px-6 py-8 shadow-2xl backdrop-blur-lg transition-all duration-300 sm:px-8 sm:py-10;
+  }
+
+  .hero-panel::before {
+    content: "";
+    position: absolute;
+    inset: auto -15% -45% auto;
+    width: 280px;
+    height: 280px;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(129, 140, 248, 0.36), transparent 70%);
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full border border-indigo-300/30 bg-indigo-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-100;
+  }
+
+  .section-title {
+    @apply text-3xl font-semibold text-white sm:text-4xl;
+  }
+
+  .section-copy {
+    @apply max-w-2xl text-sm leading-7 text-slate-300 sm:text-base;
+  }
+
+  .card-grid {
+    @apply grid gap-6 sm:grid-cols-2 xl:grid-cols-4;
+  }
+
+  .soft-button {
+    @apply inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition duration-300 hover:scale-[1.03] hover:shadow-purple-400/30;
+  }
+
+  .outline-button {
+    @apply inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-slate-100 transition hover:border-white/30 hover:bg-white/10;
+  }
+
+  .status-box {
+    @apply flex min-h-[220px] flex-col items-center justify-center gap-4 rounded-2xl border border-white/15 bg-white/10 px-6 py-8 text-center shadow-2xl backdrop-blur-lg transition-all duration-300;
+  }
+}
