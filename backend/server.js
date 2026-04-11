@@ -1,5 +1,8 @@
 // Import required packages
 import express from 'express';
+import semesterRoutes from './routes/semesterRoutes.js';
+import moduleRoutes from './routes/moduleRoutes.js';
+import gameRoutes from './routes/gameRoutes.js';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -8,11 +11,6 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 
 import roomRoutes from './routes/roomRoutes.js';
 import connectDB from './config/db.js';
-
-// ✅ FIXED imports
-import semesterRoutes from './routes/semesterRoutes.js';
-import moduleRoutes from './routes/moduleRoutes.js';
-import gameRoutes from './routes/gameRoutes.js';
 
 // Load environment variables
 dotenv.config();

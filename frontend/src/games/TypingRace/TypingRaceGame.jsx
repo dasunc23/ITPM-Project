@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import EndGameScreen from '../../Components/EndGameScreen';
+import EndGameScreen from '../../Components/EndGameScreen'
 import GameShell from '../../Components/GameShell'
 import GameLobby from '../../Components/Lobby/GameLobby'
 import RoundTimer from '../../Components/Timer/RoundTimer'
