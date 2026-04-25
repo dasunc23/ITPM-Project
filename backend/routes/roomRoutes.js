@@ -6,7 +6,8 @@ import {
   leaveRoom,
   startGame,
   getRoomsByHost,
-  clearActiveRooms
+  clearActiveRooms,
+  endGame
 } from '../controllers/roomController.js';
 import { roomSSEHandler } from '../sse/roomSSE.js';
 
@@ -15,10 +16,11 @@ const router = express.Router();
 router.post('/create', createRoom);
 router.post('/join/:roomCode', joinRoom);
 router.get('/host/:userId', getRoomsByHost);
+router.get('/stream/:roomCode', roomSSEHandler);  // ← MUST be before /:roomCode
 router.get('/:roomCode', getRoom);
 router.post('/leave/:roomCode', leaveRoom);
 router.post('/start/:roomCode', startGame);
-router.get('/stream/:roomCode', roomSSEHandler);
+router.post('/end/:roomCode', endGame);
 router.post('/clear-active', clearActiveRooms);
 
 export default router;

@@ -274,7 +274,41 @@ const getRoomsByHost = async (req, res) => {
   }
 };
 
-// ─── 7. CLEAR ALL ACTIVE ROOMS (SAFETY) ─────────
+// ─── 7. END GAME (Host only — broadcasts game-ended, deletes room) ──
+const endGame = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const { roomCode } = req.params;
+
+    const room = await Room.findOne({ roomCode: roomCode.toUpperCase() });
+
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+
+    if (room.hostId.toString() !== userId) {
+      return res.status(403).json({ message: 'Only the host can end the game' });
+    }
+
+    // Broadcast game-ended to all connected SSE clients before deleting
+    broadcastToRoom(roomCode.toUpperCase(), {
+      type: 'game-ended',
+      roomCode: roomCode.toUpperCase()
+    });
+
+    // Delete the room
+    await Room.deleteOne({ roomCode: roomCode.toUpperCase() });
+
+    console.log(`[EndGame] Room ${roomCode} deleted by host ${userId}`);
+
+    res.status(200).json({ message: 'Game ended and room deleted.' });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// ─── 8. CLEAR ALL ACTIVE ROOMS (SAFETY) ─────────
 const clearActiveRooms = async (req, res) => {
   try {
     const { userId } = req.body;
@@ -313,4 +347,4 @@ const clearActiveRooms = async (req, res) => {
   }
 };
 
-export { createRoom, joinRoom, getRoom, leaveRoom, startGame, getRoomsByHost, clearActiveRooms };
+export { createRoom, joinRoom, getRoom, leaveRoom, startGame, getRoomsByHost, clearActiveRooms, endGame };

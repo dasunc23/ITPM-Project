@@ -1,7 +1,6 @@
 {
   "name": "frontend",
   "version": "0.1.0",
-  "proxy": "http://localhost:5000",
   "private": true,
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -46,10 +45,9 @@
     ]
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.2",
-    "autoprefixer": "^10.4.27",
-    "nodemon": "^3.1.11",
-    "postcss": "^8.5.9",
-    "tailwindcss": "^3.4.19"
-  }
+    "@tailwindcss/postcss": "^4.1.18",
+    "http-proxy-middleware": "^3.0.5",
+    "nodemon": "^3.1.11"
+  },
+  "proxy": "http://localhost:5000"
 }
