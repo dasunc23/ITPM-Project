@@ -3,15 +3,21 @@ import EndGameScreen from '../../Components/EndGameScreen'
 import GameShell from '../../Components/GameShell'
 import GameLobby from '../../Components/Lobby/GameLobby'
 import RoundTimer from '../../Components/Timer/RoundTimer'
-import { gameTypeContent, memoryPairs } from '../gameData'
+import { gameTypeContent, memoryLevels } from '../gameData'
 import { useGameRoom } from '../useGameRoom'
 import { useSoundEffects } from '../useSoundEffects'
 import MemoryCard from './MemoryCard'
 
-const shuffleCards = () =>
-  [...memoryPairs.flatMap((pair) => [
-    { id: `${pair.pairId}-a`, pairId: pair.pairId, label: pair.left },
-    { id: `${pair.pairId}-b`, pairId: pair.pairId, label: pair.right },
+// Get current level's pairs
+const getCurrentLevelPairs = (levelIndex) => {
+  const level = memoryLevels[levelIndex]
+  return level ? level.pairs : memoryLevels[0].pairs
+}
+
+const shuffleCards = (pairs) =>
+  [...pairs.flatMap((pair) => [
+    { id: `${pair.pairId}-a`, pairId: pair.pairId, label: pair.left, category: pair.category },
+    { id: `${pair.pairId}-b`, pairId: pair.pairId, label: pair.right, category: pair.category },
   ])].sort(() => Math.random() - 0.5)
 
 function MemoryMatchGame() {
@@ -30,17 +36,37 @@ function MemoryMatchGame() {
   } = useGameRoom({ gameType: 'memory', roomId: 'year3-sem2-memory' })
 
   const sounds = useSoundEffects()
-  const [cards, setCards] = useState(shuffleCards)
+  const [levelIndex, setLevelIndex] = useState(0)
+  const [currentPairs, setCurrentPairs] = useState(() => getCurrentLevelPairs(0))
+  const [cards, setCards] = useState(() => shuffleCards(getCurrentLevelPairs(0)))
   const [flipped, setFlipped] = useState([])
   const [matched, setMatched] = useState([])
   const [timerKey, setTimerKey] = useState(0)
 
-  const prepareBoard = () => {
-    setCards(shuffleCards())
+  const currentLevel = memoryLevels[levelIndex]
+  const totalPairs = currentPairs.length
+  const matchesFound = matched.length / 2
+
+  const prepareBoard = (level = levelIndex) => {
+    const pairs = getCurrentLevelPairs(level)
+    setCurrentPairs(pairs)
+    setCards(shuffleCards(pairs))
     setFlipped([])
     setMatched([])
     setTimerKey((previous) => previous + 1)
-    setStatus('Schema memory board is live.')
+    setStatus(`${currentLevel.title} board is live.`)
+  }
+
+  const goToNextLevel = () => {
+    if (levelIndex < memoryLevels.length - 1) {
+      const nextLevel = levelIndex + 1
+      setLevelIndex(nextLevel)
+      prepareBoard(nextLevel)
+      setStatus(`Level ${nextLevel + 1}: ${memoryLevels[nextLevel].title}`)
+    } else {
+      // All levels complete
+      endGame()
+    }
   }
 
   const handleCardClick = (card) => {
@@ -64,7 +90,55 @@ function MemoryMatchGame() {
       window.setTimeout(() => {
         if (firstCard.pairId === secondCard.pairId) {
           setMatched((previous) => [...previous, firstId, secondId])
-          updateScore(currentPlayerId, 50)
+          // Different points based on category
+          const categoryPoints = {
+            'Primary Key': 60,
+            'Foreign Key': 50,
+            'Relationship': 40,
+          }
+          const points = categoryPoints[firstCard.category] || 50
+          updateScore(currentPlayerId, points)
+          sounds.playSuccess()
+        } else {
+          sounds.playError()
+        }
+        setFlipped([])
+      }, 850)
+    }
+  }
+
+  // Check if level is complete
+  useEffect(() => {
+    if (phase === 'playing' && matched.length > 0 && matched.length === cards.length && cards.length > 0) {
+      // Level complete - check if there are more levels
+      if (levelIndex < memoryLevels.length - 1) {
+        const timer = window.setTimeout(() => {
+          goToNextLevel()
+        }, 1500)
+        return () => window.clearTimeout(timer)
+      } else {
+        // All levels complete
+        const timer = window.setTimeout(() => endGame(), 600)
+        return () => window.clearTimeout(timer)
+      }
+    }
+
+    return undefined
+  }, [phase, matched, cards, levelIndex])
+      const firstCard = cards.find((item) => item.id === firstId)
+      const secondCard = cards.find((item) => item.id === secondId)
+
+      window.setTimeout(() => {
+        if (firstCard.pairId === secondCard.pairId) {
+          setMatched((previous) => [...previous, firstId, secondId])
+          // Different points based on category
+          const categoryPoints = {
+            'Primary Key': 60,
+            'Foreign Key': 50,
+            'Relationship': 40,
+          }
+          const points = categoryPoints[firstCard.category] || 50
+          updateScore(currentPlayerId, points)
           sounds.playSuccess()
         } else {
           sounds.playError()
@@ -87,8 +161,9 @@ function MemoryMatchGame() {
     () => (
       <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-right">
         <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Scoring</p>
-        <p className="mt-2 text-sm text-slate-300">Correct match = 50 pts</p>
-        <p className="text-sm text-slate-300">Find all pairs before time ends</p>
+        <p className="mt-2 text-sm text-slate-300">Primary Key match = 60 pts</p>
+        <p className="text-sm text-slate-300">Foreign Key match = 50 pts</p>
+        <p className="text-sm text-slate-300">Relationship match = 40 pts</p>
       </div>
     ),
     [],
@@ -141,7 +216,7 @@ function MemoryMatchGame() {
       leaderboard={leaderboard}
       topBar={topBar}
     >
-      <RoundTimer duration={75} isRunning={phase === 'playing'} onComplete={endGame} resetKey={timerKey} />
+      <RoundTimer duration={120} isRunning={phase === 'playing'} onComplete={endGame} resetKey={timerKey} />
       <div className="glass-card space-y-4 p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h2 className="text-2xl font-semibold text-white">Schema Board</h2>
