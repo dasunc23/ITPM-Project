@@ -26,7 +26,10 @@ const createRoom = async (req, res) => {
 
     // Check if the user is already in an active room (waiting or in-progress)
     const existingRoom = await Room.findOne({
-      "players.userId": new mongoose.Types.ObjectId(userId),
+      $or: [
+        { "players.userId": new mongoose.Types.ObjectId(userId) },
+        { hostId: new mongoose.Types.ObjectId(userId) }
+      ],
       status: { $in: ['waiting', 'in-progress'] },
       expiresAt: { $gt: new Date() }
     });
@@ -324,14 +327,15 @@ const clearActiveRooms = async (req, res) => {
     for (const room of rooms) {
       room.players = room.players.filter(p => String(p.userId) !== String(userId));
 
-      if (room.players.length === 0) {
-        await Room.deleteOne({ _id: room._id });
-      } else {
-        // If host left, assign new host
-        if (String(room.hostId) === String(userId)) {
-          room.players[0].isHost = true;
-          room.hostId = room.players[0].userId;
+      if (room.players.length === 0 || String(room.hostId) === String(userId)) {
+        // If host leaves or no players left, just delete/finish it to unblock
+        if (room.status === 'waiting') {
+          await Room.deleteOne({ _id: room._id });
+        } else {
+          room.status = 'finished';
+          await room.save();
         }
+      } else {
         await room.save();
 
         broadcastToRoom(room.roomCode, {
