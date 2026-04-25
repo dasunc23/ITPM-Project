@@ -46,7 +46,8 @@ const Lobby = () => {
   useEffect(() => {
     if (!roomCode) return;
 
-    const eventSource = new EventSource(`/api/rooms/stream/${roomCode}`);
+    // Use direct backend URL to bypass the CRA proxy, which buffers Server-Sent Events by default.
+    const eventSource = new EventSource(`http://localhost:5000/api/rooms/stream/${roomCode}`);
     eventSourceRef.current = eventSource;
 
     eventSource.onmessage = (e) => {
@@ -58,8 +59,18 @@ const Lobby = () => {
 
       if (data.type === 'game-started') {
         setGameStarted(true);
-        // Navigate to game page — using the broadcasted room's gametype
-        setTimeout(() => navigate(`/student-games/play/${data.room.gameType}`, { state: { ...state, room: data.room } }), 2000);
+        // Close SSE before navigating
+        eventSource.close();
+        // Immediately navigate all players (host + guests) to the game page
+        navigate(`/student-games/play/${data.room.gameType}`, {
+          state: { ...state, room: data.room }
+        });
+      }
+
+      if (data.type === 'game-ended') {
+        // Host ended the game — non-host players go back to home
+        eventSource.close();
+        navigate('/');
       }
     };
 

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import EndGameScreen from '../../Components/EndGameScreen'
 import GameShell from '../../Components/GameShell'
 import GameLobby from '../../Components/Lobby/GameLobby'
@@ -8,21 +8,23 @@ import { useGameRoom } from '../useGameRoom'
 import { useSoundEffects } from '../useSoundEffects'
 import QuestionCard from './QuestionCard'
 
-function QuizBattleGame() {
+function QuizBattleGame({ roomState, onEndGame }) {
+  // Determine if this is a real multiplayer session
+  const isMultiplayer = !!(roomState?.room?.roomCode)
+  const isHost = isMultiplayer ? roomState.isHost : true
+
   const {
     currentPlayerId,
     phase,
     countdown,
     players,
     leaderboard,
-    isHost,
     startGame,
     emitRoomEvent,
     updateScore,
     endGame,
-    playAgain,
     setStatus,
-  } = useGameRoom({ gameType: 'quiz', roomId: 'year3-sem2-quiz' })
+  } = useGameRoom({ gameType: 'quiz', roomId: roomState?.room?.roomCode || 'year3-sem2-quiz' })
 
   const sounds = useSoundEffects()
   const [roundIndex, setRoundIndex] = useState(0)
@@ -34,6 +36,31 @@ function QuizBattleGame() {
   const [roundComplete, setRoundComplete] = useState(false)
   const resolvedRoundRef = useRef(false)
   const currentQuestion = quizBattleQuestions[roundIndex]
+
+  // In multiplayer: skip the internal lobby, start immediately
+  useEffect(() => {
+    if (isMultiplayer) {
+      startGame()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMultiplayer])
+
+  // Build leaderboard with real player names in multiplayer
+  const multiplayerLeaderboard = useMemo(() => {
+    if (!isMultiplayer) return leaderboard
+    const roomPlayers = roomState.room.players || []
+    return roomPlayers
+      .map((p) => ({
+        id: p.userId,
+        name: p.username,
+        score: leaderboard.find((l) => l.id === p.userId)?.score ?? 0,
+        rank: 0,
+      }))
+      .sort((a, b) => b.score - a.score)
+      .map((p, i) => ({ ...p, rank: i + 1 }))
+  }, [isMultiplayer, roomState, leaderboard])
+
+  const displayLeaderboard = isMultiplayer ? multiplayerLeaderboard : leaderboard
 
   const resetRound = (nextRoundIndex = roundIndex) => {
     resolvedRoundRef.current = false
@@ -108,14 +135,15 @@ function QuizBattleGame() {
     [],
   )
 
-  if (phase === 'lobby') {
+  // Only show internal lobby in solo mode
+  if (phase === 'lobby' && !isMultiplayer) {
     return (
       <GameShell
         title={gameTypeContent.quiz.title}
         subtitle={gameTypeContent.quiz.subtitle}
         phase={phase}
         countdown={countdown}
-        leaderboard={leaderboard}
+        leaderboard={displayLeaderboard}
       >
         <GameLobby
           players={players}
@@ -136,20 +164,17 @@ function QuizBattleGame() {
     return (
       <GameShell
         title={gameTypeContent.quiz.title}
-        subtitle="Quiz finished. Review your score and launch another solo run."
+        subtitle="Quiz finished. Review your score."
         phase={phase}
         countdown={countdown}
-        leaderboard={leaderboard}
+        leaderboard={displayLeaderboard}
         topBar={topBar}
       >
         <EndGameScreen
-          players={leaderboard}
-          onPlayAgain={() => {
-            setRoundIndex(0)
-            resetRound(0)
-            playAgain()
-          }}
+          players={displayLeaderboard}
+          onEndGame={onEndGame || (() => {})}
           winnerLabel="Final Score"
+          isHost={isHost}
         />
       </GameShell>
     )
@@ -161,7 +186,7 @@ function QuizBattleGame() {
       subtitle={`Question ${roundIndex + 1} of ${quizBattleQuestions.length}.`}
       phase={phase}
       countdown={countdown}
-      leaderboard={leaderboard}
+      leaderboard={displayLeaderboard}
       topBar={topBar}
     >
       <RoundTimer

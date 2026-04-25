@@ -14,26 +14,54 @@ const shuffleCards = () =>
     { id: `${pair.pairId}-b`, pairId: pair.pairId, label: pair.right },
   ])].sort(() => Math.random() - 0.5)
 
-function MemoryMatchGame() {
+function MemoryMatchGame({ roomState, onEndGame }) {
+  // Determine if this is a real multiplayer session
+  const isMultiplayer = !!(roomState?.room?.roomCode)
+  const isHost = isMultiplayer ? roomState.isHost : true
+
   const {
     currentPlayerId,
     phase,
     countdown,
     players,
     leaderboard,
-    isHost,
     startGame,
     updateScore,
     endGame,
-    playAgain,
     setStatus,
-  } = useGameRoom({ gameType: 'memory', roomId: 'year3-sem2-memory' })
+  } = useGameRoom({ gameType: 'memory', roomId: roomState?.room?.roomCode || 'year3-sem2-memory' })
 
   const sounds = useSoundEffects()
   const [cards, setCards] = useState(shuffleCards)
   const [flipped, setFlipped] = useState([])
   const [matched, setMatched] = useState([])
   const [timerKey, setTimerKey] = useState(0)
+
+  // In multiplayer: skip the internal lobby, start immediately
+  useEffect(() => {
+    if (isMultiplayer) {
+      prepareBoard()
+      startGame()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMultiplayer])
+
+  // Build leaderboard with real player names in multiplayer
+  const multiplayerLeaderboard = useMemo(() => {
+    if (!isMultiplayer) return leaderboard
+    const roomPlayers = roomState.room.players || []
+    return roomPlayers
+      .map((p) => ({
+        id: p.userId,
+        name: p.username,
+        score: leaderboard.find((l) => l.id === p.userId)?.score ?? 0,
+        rank: 0,
+      }))
+      .sort((a, b) => b.score - a.score)
+      .map((p, i) => ({ ...p, rank: i + 1 }))
+  }, [isMultiplayer, roomState, leaderboard])
+
+  const displayLeaderboard = isMultiplayer ? multiplayerLeaderboard : leaderboard
 
   const prepareBoard = () => {
     setCards(shuffleCards())
@@ -94,14 +122,15 @@ function MemoryMatchGame() {
     [],
   )
 
-  if (phase === 'lobby') {
+  // Only show internal lobby in solo mode
+  if (phase === 'lobby' && !isMultiplayer) {
     return (
       <GameShell
         title={gameTypeContent.memory.title}
         subtitle={gameTypeContent.memory.subtitle}
         phase={phase}
         countdown={countdown}
-        leaderboard={leaderboard}
+        leaderboard={displayLeaderboard}
       >
         <GameLobby
           players={players}
@@ -124,10 +153,15 @@ function MemoryMatchGame() {
         subtitle="Board completed."
         phase={phase}
         countdown={countdown}
-        leaderboard={leaderboard}
+        leaderboard={displayLeaderboard}
         topBar={topBar}
       >
-        <EndGameScreen players={leaderboard} onPlayAgain={playAgain} winnerLabel="Final Score" />
+        <EndGameScreen
+          players={displayLeaderboard}
+          onEndGame={onEndGame || (() => {})}
+          winnerLabel="Final Score"
+          isHost={isHost}
+        />
       </GameShell>
     )
   }
@@ -138,7 +172,7 @@ function MemoryMatchGame() {
       subtitle="Flip cards and match table relationships."
       phase={phase}
       countdown={countdown}
-      leaderboard={leaderboard}
+      leaderboard={displayLeaderboard}
       topBar={topBar}
     >
       <RoundTimer duration={75} isRunning={phase === 'playing'} onComplete={endGame} resetKey={timerKey} />

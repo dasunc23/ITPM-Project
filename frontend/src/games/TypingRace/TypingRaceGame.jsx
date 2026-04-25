@@ -24,26 +24,36 @@ const calculateAccuracy = (input, expected) => {
   return Math.round((correctCharacters / input.length) * 100)
 }
 
-function TypingRaceGame() {
+function TypingRaceGame({ roomState, onEndGame }) {
+  // Determine if this is a real multiplayer session
+  const isMultiplayer = !!(roomState?.room?.roomCode)
+  const isHost = isMultiplayer ? roomState.isHost : true
+
   const {
     currentPlayerId,
     phase,
     countdown,
     players,
     leaderboard,
-    isHost,
     startGame,
     emitRoomEvent,
     setAbsoluteScore,
     endGame,
-    playAgain,
-  } = useGameRoom({ gameType: 'typing', roomId: 'year3-sem2-typing' })
+  } = useGameRoom({ gameType: 'typing', roomId: roomState?.room?.roomCode || 'year3-sem2-typing' })
 
   const sounds = useSoundEffects()
   const [prompt] = useState(typingRacePrompts[0])
   const [typedText, setTypedText] = useState('')
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [timerKey, setTimerKey] = useState(0)
+
+  // In multiplayer: skip the internal lobby, start immediately
+  useEffect(() => {
+    if (isMultiplayer) {
+      startGame()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMultiplayer])
 
   useEffect(() => {
     if (phase !== 'playing') {
@@ -62,6 +72,23 @@ function TypingRaceGame() {
       window.clearInterval(elapsedInterval)
     }
   }, [phase])
+
+  // Build leaderboard with real player names in multiplayer
+  const multiplayerLeaderboard = useMemo(() => {
+    if (!isMultiplayer) return leaderboard
+    const roomPlayers = roomState.room.players || []
+    return roomPlayers
+      .map((p) => ({
+        id: p.userId,
+        name: p.username,
+        score: leaderboard.find((l) => l.id === p.userId)?.score ?? 0,
+        rank: 0,
+      }))
+      .sort((a, b) => b.score - a.score)
+      .map((p, i) => ({ ...p, rank: i + 1 }))
+  }, [isMultiplayer, roomState, leaderboard])
+
+  const displayLeaderboard = isMultiplayer ? multiplayerLeaderboard : leaderboard
 
   const accuracy = calculateAccuracy(typedText, prompt.text)
   const wordsTyped = typedText.trim() ? typedText.trim().split(/\s+/).length : 0
@@ -102,14 +129,15 @@ function TypingRaceGame() {
     [wpm, accuracy],
   )
 
-  if (phase === 'lobby') {
+  // Only show internal lobby in solo mode
+  if (phase === 'lobby' && !isMultiplayer) {
     return (
       <GameShell
         title={gameTypeContent.typing.title}
         subtitle={gameTypeContent.typing.subtitle}
         phase={phase}
         countdown={countdown}
-        leaderboard={leaderboard}
+        leaderboard={displayLeaderboard}
       >
         <GameLobby
           players={players}
@@ -129,10 +157,15 @@ function TypingRaceGame() {
         subtitle="Run completed."
         phase={phase}
         countdown={countdown}
-        leaderboard={leaderboard}
+        leaderboard={displayLeaderboard}
         topBar={topBar}
       >
-        <EndGameScreen players={leaderboard} onPlayAgain={playAgain} winnerLabel="Final Score" />
+        <EndGameScreen
+          players={displayLeaderboard}
+          onEndGame={onEndGame || (() => {})}
+          winnerLabel="Final Score"
+          isHost={isHost}
+        />
       </GameShell>
     )
   }
@@ -143,7 +176,7 @@ function TypingRaceGame() {
       subtitle={prompt.title}
       phase={phase}
       countdown={countdown}
-      leaderboard={leaderboard}
+      leaderboard={displayLeaderboard}
       topBar={topBar}
     >
       <RoundTimer duration={45} isRunning={phase === 'playing'} onComplete={endGame} resetKey={timerKey} />

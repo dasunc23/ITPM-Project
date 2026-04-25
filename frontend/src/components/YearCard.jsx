@@ -20,7 +20,7 @@ function YearCard({ year, isFeatured }) {
         </p>
       </div>
 
-      <div className="flex items-center justify-between text-sm font-medium text-indigo-100">
+      <div className="flex items-center justify-between text-sm font-medium text-fuchsia-300">
         <span>Open year</span>
         <span className="transition-transform duration-300 group-hover:translate-x-1">-&gt;</span>
       </div>
