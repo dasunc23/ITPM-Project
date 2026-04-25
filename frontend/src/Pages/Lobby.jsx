@@ -70,7 +70,7 @@ const Lobby = () => {
     return () => {
       eventSource.close();
     };
-  }, [roomCode]);
+  }, [roomCode, navigate, state]);
 
   // ─── Start Game ───────────────────────────────
   const handleStart = async () => {

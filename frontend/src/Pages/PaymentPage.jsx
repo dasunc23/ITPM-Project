@@ -1,10 +1,21 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PaymentForm from '../Components/PaymentForm';
 
 const PaymentPage = () => {
-  const [amount, setAmount] = useState(32.5);
-  const [currency, setCurrency] = useState('EUR');
-  const [description, setDescription] = useState('Game entry fee');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const paymentContext = location.state || {};
+  const access = paymentContext.access;
+
+  const [amount] = useState(32.5);
+  const [currency] = useState('USD');
+  const description = useMemo(() => {
+    if (paymentContext.source === 'game-entry' && paymentContext.game?.name) {
+      return `Unlimited game access for ${paymentContext.game.name}`;
+    }
+    return 'Game entry fee';
+  }, [paymentContext.game?.name, paymentContext.source]);
   const [paymentResult, setPaymentResult] = useState(null);
   const [billingInfo, setBillingInfo] = useState({
     name: '',
@@ -16,11 +27,19 @@ const PaymentPage = () => {
   });
 
   const getCurrentUserId = () => {
-    const user = JSON.parse(localStorage.getItem('loggedInUser'));
+    const user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
     return user?._id;
   };
 
   const handlePaymentSuccess = (transaction) => {
+    const user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    if (user) {
+      localStorage.setItem('loggedInUser', JSON.stringify({
+        ...user,
+        hasPaidGameAccess: true,
+      }));
+    }
+
     setPaymentResult({
       success: true,
       transaction,
@@ -35,300 +54,243 @@ const PaymentPage = () => {
     });
   };
 
+  const handleSuccessNavigation = () => {
+    navigate(paymentContext.returnTo || '/home', { state: paymentContext.returnState });
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center">
-              <div className="text-2xl font-bold text-indigo-600">GameHub</div>
-              <span className="ml-2 text-sm text-gray-500">Secure Checkout</span>
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white font-sans selection:bg-purple-200">
+      <div className="lg:w-2/5 bg-[#0f1015] text-white p-8 lg:p-12 xl:p-16 flex flex-col justify-between relative overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-600 rounded-full mix-blend-screen filter blur-[128px] opacity-20 pointer-events-none"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[128px] opacity-20 pointer-events-none"></div>
+
+        <div className="relative z-10 w-full max-w-md mx-auto lg:mx-0">
+          <div className="flex items-center gap-2 mb-16 cursor-pointer" onClick={() => navigate('/home')}>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-500 to-pink-500 shadow-lg shadow-purple-500/30 flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center text-sm text-gray-600">
-                <svg className="w-4 h-4 mr-1 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                SSL Encrypted
+            <span className="text-xl font-bold tracking-wide">GameHub</span>
+          </div>
+
+          <p className="text-purple-400 text-sm font-semibold tracking-widest uppercase mb-4">Total to pay</p>
+          <div className="flex items-end gap-3 mb-10 border-b border-gray-800 pb-10">
+            <h1 className="text-6xl font-light tracking-tight">${amount.toFixed(2)}</h1>
+            <span className="text-2xl text-gray-400 mb-2 font-light">{currency}</span>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex items-center justify-between group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gray-800/50 border border-gray-700 flex items-center justify-center group-hover:border-purple-500 transition-colors">
+                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-100">{description}</h3>
+                  <p className="text-sm text-gray-500">Premium Digital Access</p>
+                </div>
               </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <svg className="w-4 h-4 mr-1 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                PCI Compliant
+              <span className="font-medium">${amount.toFixed(2)}</span>
+            </div>
+
+            <div className="flex items-center justify-between group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gray-800/50 border border-gray-700 flex items-center justify-center group-hover:border-purple-500 transition-colors">
+                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-100">Platform Tax</h3>
+                  <p className="text-sm text-gray-500">Included in total</p>
+                </div>
               </div>
+              <span className="font-medium text-gray-400">$0.00</span>
             </div>
           </div>
-        </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <nav className="flex" aria-label="Breadcrumb">
-            <ol className="flex items-center space-x-4">
-              <li>
-                <div className="flex items-center">
-                  <span className="text-sm font-medium text-gray-500">Cart</span>
-                  <svg className="ml-4 h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </li>
-              <li>
-                <div className="flex items-center">
-                  <span className="text-sm font-medium text-indigo-600">Payment</span>
-                  <svg className="ml-4 h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </li>
-              <li>
-                <span className="text-sm font-medium text-gray-500">Confirmation</span>
-              </li>
-            </ol>
-          </nav>
+          {paymentContext.source === 'game-entry' ? (
+            <div className="mt-10 rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200">
+              <p className="font-semibold text-white">Game access required</p>
+              <p className="mt-2 text-slate-300">
+                You have used {access?.freePlaysUsed ?? 5} of {access?.freePlayLimit ?? 5} free game entries.
+                Complete payment once to keep entering games without the free-play limit.
+              </p>
+            </div>
+          ) : null}
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-2">
-          {/* Payment Form Section */}
-          <div className="space-y-8">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">Contact Information</h2>
-                <div className="grid gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+        <div className="relative z-10 w-full max-w-md mx-auto lg:mx-0 mt-20 text-sm text-gray-500 flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+            SSL Secure Encryption
+          </div>
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/></svg>
+            PCI DSS Compliant Checkout
+          </div>
+        </div>
+      </div>
+
+      <div className="lg:w-3/5 bg-[#fafafa] lg:h-screen lg:overflow-y-auto w-full">
+        <div className="max-w-2xl mx-auto p-8 lg:p-12 xl:p-16">
+          {paymentResult ? (
+            <div className="bg-white border flex flex-col items-center justify-center text-center border-green-100 p-12 rounded-3xl shadow-xl shadow-green-500/10 mt-10">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-4">Payment Successful!</h2>
+              <p className="text-gray-500 mb-8 max-w-sm">Thank you for your purchase. Your premium digital access has been granted to your account immediately.</p>
+              {paymentResult.transaction && (
+                <div className="bg-gray-50 px-6 py-4 rounded-xl border border-gray-200 text-sm mb-8 w-full max-w-sm">
+                  <div className="flex justify-between text-gray-500 mb-2"><span>Transaction ID</span><span className="font-mono text-gray-800">{paymentResult.transaction.id}</span></div>
+                  <div className="flex justify-between text-gray-500 mb-2"><span>Amount Paid</span><span className="font-semibold text-gray-800">${amount.toFixed(2)}</span></div>
+                  <div className="flex justify-between text-gray-500"><span>Date</span><span className="text-gray-800">{new Date().toLocaleDateString()}</span></div>
+                </div>
+              )}
+              <button onClick={handleSuccessNavigation} className="bg-gray-900 text-white font-medium px-8 py-3 rounded-full hover:bg-purple-600 transition-colors shadow-lg shadow-gray-900/20">
+                {paymentContext.returnTo ? 'Continue to Game' : 'Return to GameHub'}
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="mb-10">
+                <h2 className="text-2xl font-bold text-gray-900">Checkout</h2>
+                <p className="text-gray-500 mt-1 text-sm">Please fill out your billing information to proceed.</p>
+              </div>
+
+              <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                  <div className="bg-purple-100 text-purple-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">1</div>
+                  Billing Details
+                </h3>
+
+                <div className="grid gap-x-6 gap-y-5">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Email Address</label>
                     <input
                       type="email"
                       name="email"
                       value={billingInfo.email}
                       onChange={handleBillingChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="your@email.com"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+                      placeholder="john@example.com"
                     />
                   </div>
-                </div>
-              </div>
 
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">Billing Address</h2>
-                <div className="grid gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Full Name</label>
                     <input
                       type="text"
                       name="name"
                       value={billingInfo.name}
                       onChange={handleBillingChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
                       placeholder="John Doe"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Street Address</label>
                     <input
                       type="text"
                       name="address"
                       value={billingInfo.address}
                       onChange={handleBillingChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="123 Main St"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+                      placeholder="123 Main Street"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">City</label>
                       <input
                         type="text"
                         name="city"
                         value={billingInfo.city}
                         onChange={handleBillingChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
                         placeholder="New York"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">ZIP / Postal</label>
                       <input
                         type="text"
                         name="zipCode"
                         value={billingInfo.zipCode}
                         onChange={handleBillingChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
                         placeholder="10001"
                       />
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                    <select
-                      name="country"
-                      value={billingInfo.country}
-                      onChange={handleBillingChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    >
-                      <option>United States</option>
-                      <option>Canada</option>
-                      <option>United Kingdom</option>
-                      <option>Germany</option>
-                      <option>France</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
 
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">Payment Information</h2>
-                <p className="text-sm text-gray-600 mb-4">
-                  Your payment information is encrypted and secure.
-                </p>
-                <PaymentForm
-                  userId={getCurrentUserId()}
-                  amount={amount}
-                  type="GAME_ENTRY"
-                  description={description}
-                  onSuccess={handlePaymentSuccess}
-                />
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-start">
-                <input
-                  id="terms"
-                  name="terms"
-                  type="checkbox"
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                />
-                <div className="ml-3">
-                  <label htmlFor="terms" className="text-sm text-gray-700">
-                    I agree to the{' '}
-                    <a href="#" className="text-indigo-600 hover:text-indigo-500">Terms of Service</a>
-                    {' '}and{' '}
-                    <a href="#" className="text-indigo-600 hover:text-indigo-500">Privacy Policy</a>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Order Summary Section */}
-          <div className="space-y-8">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between py-4 border-b border-gray-200">
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4">
-                      <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{description}</p>
-                      <p className="text-sm text-gray-500">Digital Game Access</p>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Country</label>
+                    <div className="relative">
+                      <select
+                        name="country"
+                        value={billingInfo.country}
+                        onChange={handleBillingChange}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 appearance-none text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+                      >
+                        <option>United States</option>
+                        <option>Canada</option>
+                        <option>United Kingdom</option>
+                        <option>Germany</option>
+                        <option>France</option>
+                        <option>Australia</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-400">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                      </div>
                     </div>
                   </div>
-                  <span className="font-semibold text-gray-900">€{amount.toFixed(2)}</span>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="text-gray-900">€{amount.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tax</span>
-                    <span className="text-gray-900">€0.00</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Shipping</span>
-                    <span className="text-gray-900">Free</span>
-                  </div>
-                </div>
-
-                <div className="border-t border-gray-200 pt-4">
-                  <div className="flex justify-between text-lg font-semibold">
-                    <span className="text-gray-900">Total</span>
-                    <span className="text-indigo-600">€{amount.toFixed(2)} {currency}</span>
-                  </div>
                 </div>
               </div>
 
-              <div className="mt-6 space-y-4">
-                <div className="flex items-center text-sm text-gray-600">
-                  <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  Secure SSL encryption
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <svg className="w-4 h-4 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  PCI DSS compliant
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <svg className="w-4 h-4 mr-2 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  30-day money back guarantee
-                </div>
-              </div>
-
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <p className="text-xs text-gray-500 text-center">
-                  By completing your purchase, you agree to our{' '}
-                  <a href="#" className="text-indigo-600 hover:text-indigo-500">Terms of Service</a>
-                  {' '}and{' '}
-                  <a href="#" className="text-indigo-600 hover:text-indigo-500">Privacy Policy</a>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {paymentResult && (
-          <div className="mt-8 bg-green-50 border border-green-200 rounded-lg p-6">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-green-800">
-                  Payment Successful
+              <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                  <div className="bg-purple-100 text-purple-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">2</div>
+                  Payment Method
                 </h3>
-                <div className="mt-2 text-sm text-green-700">
-                  <p>{paymentResult.message}</p>
-                  {paymentResult.transaction && (
-                    <p className="mt-1">Transaction ID: {paymentResult.transaction.id}</p>
-                  )}
+
+                <div className="p-4 border border-gray-200 rounded-2xl bg-gray-50/50 mb-6 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-500 focus-within:bg-white transition-all">
+                  <PaymentForm
+                    userId={getCurrentUserId()}
+                    amount={amount}
+                    type="GAME_ENTRY"
+                    description={description}
+                    onSuccess={handlePaymentSuccess}
+                  />
+                </div>
+
+                <div className="flex items-start bg-gray-50 p-4 rounded-xl">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="terms"
+                      name="terms"
+                      type="checkbox"
+                      className="w-4 h-4 text-purple-600 bg-white border-gray-300 rounded focus:ring-purple-500 focus:ring-offset-gray-50 transition-colors cursor-pointer"
+                    />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label htmlFor="terms" className="text-gray-500 cursor-pointer">
+                      I agree to GameHub's{' '}
+                      <a href="#!" className="text-gray-800 font-medium hover:text-purple-600 transition-colors underline decoration-gray-300 underline-offset-2 hover:decoration-purple-600">Terms of Service</a>
+                      {' '}and{' '}
+                      <a href="#!" className="text-gray-800 font-medium hover:text-purple-600 transition-colors underline decoration-gray-300 underline-offset-2 hover:decoration-purple-600">Privacy Policy</a>.
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-      </div>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-16">
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-500">
-              © 2024 GameHub. All rights reserved.
-            </div>
-            <div className="flex items-center space-x-6">
-              <a href="#" className="text-sm text-gray-500 hover:text-gray-900">Privacy Policy</a>
-              <a href="#" className="text-sm text-gray-500 hover:text-gray-900">Terms of Service</a>
-              <a href="#" className="text-sm text-gray-500 hover:text-gray-900">Contact Support</a>
-            </div>
-          </div>
+              <p className="text-center text-xs text-gray-400 mt-8 mb-4">
+                &copy; {new Date().getFullYear()} GameHub. All rights reserved.
+              </p>
+            </>
+          )}
         </div>
-      </footer>
+      </div>
     </div>
   );
 };

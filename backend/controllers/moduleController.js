@@ -28,5 +28,3 @@ export const getModules = async (req, res, next) => {
     next(error);
   }
 };
-
-

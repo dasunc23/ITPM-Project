@@ -21,7 +21,7 @@ function AdminDashboard() {
   // get users from backend
   const getUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/users");
+      const res = await axios.get("/api/users");
       setUsers(res.data);
     } catch (err) {
       console.log(err);
@@ -31,7 +31,7 @@ function AdminDashboard() {
   // delete user with confirmation
   const deleteUser = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/users/${id}`);
+      await axios.delete(`/api/users/${id}`);
       setDeleteConfirm(null);
       getUsers(); // refresh list
     } catch (err) {
@@ -53,7 +53,7 @@ function AdminDashboard() {
   // save edited user
   const saveEdit = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/users/${editingUser}`, editForm);
+      await axios.put(`/api/users/${editingUser}`, editForm);
       setEditingUser(null);
       getUsers(); // refresh list
     } catch (err) {
@@ -69,7 +69,7 @@ function AdminDashboard() {
   // add new user
   const addUser = async () => {
     try {
-      await axios.post("http://localhost:5000/api/users", addForm);
+      await axios.post("/api/users", addForm);
       setShowAddForm(false);
       setAddForm({ name: '', email: '', password: '', campus: '', year: '', role: '' });
       getUsers(); // refresh list

@@ -1,6 +1,22 @@
 import Room from '../models/roomModel.js';
+import User from '../models/User.js';
 import mongoose from 'mongoose';
 import { broadcastToRoom } from '../sse/roomSSE.js';
+
+const FREE_GAME_PLAY_LIMIT = 5;
+
+const formatGameAccess = (user) => {
+  const freePlaysUsed = user.freeGamePlays || 0;
+  const freePlaysRemaining = Math.max(FREE_GAME_PLAY_LIMIT - freePlaysUsed, 0);
+
+  return {
+    freePlayLimit: FREE_GAME_PLAY_LIMIT,
+    freePlaysUsed,
+    freePlaysRemaining,
+    hasPaidGameAccess: Boolean(user.hasPaidGameAccess),
+    requiresPayment: !user.hasPaidGameAccess && freePlaysUsed >= FREE_GAME_PLAY_LIMIT,
+  };
+};
 
 // ─── Helper: Generate unique 6-char room code ───
 const generateRoomCode = async () => {
@@ -22,6 +38,18 @@ const createRoom = async (req, res) => {
 
     if (!userId || !username || !gameType) {
       return res.status(400).json({ message: 'userId, username and gameType are required' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.hasPaidGameAccess && (user.freeGamePlays || 0) >= FREE_GAME_PLAY_LIMIT) {
+      return res.status(403).json({
+        message: 'Free play limit reached. Payment required to continue.',
+        access: formatGameAccess(user)
+      });
     }
 
     // Check if the user is already in an active room (waiting or in-progress)
@@ -51,13 +79,19 @@ const createRoom = async (req, res) => {
       lastActivity: Date.now()
     });
 
+    if (!user.hasPaidGameAccess) {
+      user.freeGamePlays = (user.freeGamePlays || 0) + 1;
+      await user.save();
+    }
+
     await room.save();
     console.log(`[CreateRoom] Room created: ${roomCode} for hostId: ${room.hostId}`);
 
     res.status(201).json({
       message: 'Room created successfully',
       roomCode: room.roomCode,
-      room
+      room,
+      access: formatGameAccess(user)
     });
 
   } catch (error) {

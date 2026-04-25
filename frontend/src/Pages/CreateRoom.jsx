@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { getGames, getModules } from '../services/api';
+import { getGameAccessStatus, getGames, getModules } from '../services/api';
 import { semesterTwoFallbackGames } from '../games/gameData';
 
 const CreateRoom = () => {
@@ -26,7 +26,7 @@ const CreateRoom = () => {
       const user = JSON.parse(userStr);
       setIsLoggedIn(true);
       setCurrentUser(user);
-      setFormData(prev => ({ ...prev, username: user.username || '' }));
+      setFormData(prev => ({ ...prev, username: user.name || '' }));
     }
   }, []);
   const [errors, setErrors] = useState({});
@@ -144,16 +144,51 @@ const CreateRoom = () => {
 
     setLoading(true);
     try {
+      const access = await getGameAccessStatus(currentUser._id);
+      if (access.requiresPayment) {
+        navigate('/payment', {
+          state: {
+            source: 'game-entry',
+            access,
+            game: availableGames.find((item) => item.type === formData.gameType) || null,
+            returnTo: `/create?game=${formData.gameType}&gameName=${encodeURIComponent(preselectedGameName || availableGames.find((item) => item.type === formData.gameType)?.name || '')}`,
+          },
+        });
+        return;
+      }
+
       const res = await axios.post('/api/rooms/create', {
         userId: currentUser._id,
         username: formData.username.trim(),
         gameType: formData.gameType
       });
 
+      if (res.data.access) {
+        const updatedUser = {
+          ...currentUser,
+          freeGamePlays: res.data.access.freePlaysUsed,
+          hasPaidGameAccess: res.data.access.hasPaidGameAccess,
+        };
+        setCurrentUser(updatedUser);
+        localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
+      }
+
       setRoomCode(res.data.roomCode);
       setCreatedRoom(res.data.room);
 
     } catch (error) {
+      if (error.response?.status === 403 && error.response?.data?.access?.requiresPayment) {
+        navigate('/payment', {
+          state: {
+            source: 'game-entry',
+            access: error.response.data.access,
+            game: availableGames.find((item) => item.type === formData.gameType) || null,
+            returnTo: `/create?game=${formData.gameType}&gameName=${encodeURIComponent(preselectedGameName || availableGames.find((item) => item.type === formData.gameType)?.name || '')}`,
+          },
+        });
+        return;
+      }
+
       setErrors({ general: error.response?.data?.message || 'Failed to create room' });
     } finally {
       setLoading(false);

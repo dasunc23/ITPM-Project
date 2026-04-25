@@ -25,7 +25,7 @@ const PaymentForm = ({ userId, amount, type, description, onSuccess }) => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/payments/create-intent', {
+      const response = await axios.post('/api/payments/create-intent', {
         userId,
         amount,
         type,
@@ -118,7 +118,7 @@ const PaymentForm = ({ userId, amount, type, description, onSuccess }) => {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/payments/confirm', {
+      const response = await axios.post('/api/payments/confirm', {
         paymentIntentId: confirmedPaymentIntent.id,
         transactionId: paymentIntent.transactionId,
       });

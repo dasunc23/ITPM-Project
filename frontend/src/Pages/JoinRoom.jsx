@@ -28,7 +28,7 @@ const JoinRoom = () => {
       const user = JSON.parse(userStr);
       setIsLoggedIn(true);
       setCurrentUser(user);
-      setFormData(prev => ({ ...prev, username: user.username || '' }));
+      setFormData(prev => ({ ...prev, username: user.name || '' }));
     }
   }, []);
 
@@ -273,7 +273,7 @@ const JoinRoom = () => {
                           navigate(targetPath, {
                             state: {
                               userId: currentUser._id,
-                              username: r.players.find(p => String(p.userId) === String(currentUser._id))?.username || currentUser.username,
+                              username: r.players.find(p => String(p.userId) === String(currentUser._id))?.username || currentUser.name,
                               isHost: String(r.hostId) === String(currentUser._id),
                               room: r
                             }

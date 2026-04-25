@@ -139,6 +139,13 @@ export const confirmPayment = async (req, res) => {
       });
     }
 
+    if (transaction.type === "GAME_ENTRY") {
+      await User.findByIdAndUpdate(transaction.userId, {
+        hasPaidGameAccess: true,
+        gameAccessPaidAt: new Date(),
+      });
+    }
+
     return res.status(200).json({
       success: true,
       message: "Payment confirmed successfully",
@@ -148,6 +155,7 @@ export const confirmPayment = async (req, res) => {
         amount: transaction.amount,
         type: transaction.type,
       },
+      accessGranted: transaction.type === "GAME_ENTRY",
     });
   } catch (error) {
     console.error("Error confirming payment:", error);

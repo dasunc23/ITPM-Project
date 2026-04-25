@@ -27,5 +27,3 @@ export const getGames = async (req, res, next) => {
     next(error);
   }
 };
-
-

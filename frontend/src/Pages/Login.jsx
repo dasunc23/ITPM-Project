@@ -9,7 +9,7 @@ function Login() {
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
 
   const validateEmail = (email) => {
-    const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@\"]+\.)+[^<>()[\]\\.,;:\s@\"]{2,})$/i;
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i;
     return re.test(String(email).toLowerCase());
   };
 
@@ -54,7 +54,7 @@ function Login() {
       const email = form.email.trim().toLowerCase();
       const password = form.password.trim();
 
-      const res = await axios.get("http://localhost:5000/api/users");
+      const res = await axios.get("/api/users");
       const user = res.data.find((u) => (u.email || "").trim().toLowerCase() === email && (u.password || "").trim() === password);
       if (!user) {
         setError("Invalid email or password");
@@ -114,7 +114,7 @@ function Login() {
               <label style={{ color: "#94a3b8", fontSize: "13px" }}>
                 <input type="checkbox" style={{ marginRight: "6px" }} /> Remember me
               </label>
-              <a href="#" style={{ color: "#a855f7", textDecoration: "none", fontSize: "13px" }}>Forgot Password?</a>
+              <a href="#!" style={{ color: "#a855f7", textDecoration: "none", fontSize: "13px" }}>Forgot Password?</a>
             </div>
             {error && <p style={{ color: "#fecdd3", marginBottom: "12px", textAlign: "center" }}>{error}</p>}
             <button type="submit" style={{ width: "100%", padding: "14px", borderRadius: "32px", border: "none", background: "#a855f7", color: "#fff", fontWeight: 700, fontSize: "15px", cursor: "pointer" }}>LOG IN</button>

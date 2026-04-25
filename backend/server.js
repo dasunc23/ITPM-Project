@@ -3,16 +3,15 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import userRoutes from "./routes/userRoutes.js";
-import paymentRoutes from "./routes/paymentRoutes.js";
-
-import roomRoutes from './routes/roomRoutes.js';
 import connectDB from './config/db.js';
 
-// ✅ FIXED imports
+// Import Routes
 import semesterRoutes from './routes/semesterRoutes.js';
 import moduleRoutes from './routes/moduleRoutes.js';
 import gameRoutes from './routes/gameRoutes.js';
+import userRoutes from "./routes/userRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
+import roomRoutes from './routes/roomRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -35,13 +34,7 @@ app.use(express.urlencoded({ extended: true }));
 // ============================================
 app.use("/api/users", userRoutes);
 app.use("/api/payments", paymentRoutes);
-//app.use('/api/rooms', roomRoutes);
-
-// ============================================
-// ROUTES
-// ============================================
 app.use('/api/rooms', roomRoutes);
-
 app.use('/api/semesters', semesterRoutes);
 app.use('/api/modules', moduleRoutes);
 app.use('/api/games', gameRoutes);

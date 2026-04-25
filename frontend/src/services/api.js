@@ -26,4 +26,14 @@ export const getGames = async ({ moduleName, moduleId }) => {
   return data;
 };
 
+export const getGameAccessStatus = async (userId) => {
+  const { data } = await api.get(`/users/${userId}/game-access`);
+  return data.access;
+};
+
+export const recordGameAccessPlay = async (userId) => {
+  const { data } = await api.post(`/users/${userId}/game-access/play`);
+  return data.access;
+};
+
 export default api;
