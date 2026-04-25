@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import EndGameScreen from '../../Components/EndGameScreen'
 import GameShell from '../../Components/GameShell'
 import GameLobby from '../../Components/Lobby/GameLobby'
@@ -10,21 +10,23 @@ import OutputPreview from './OutputPreview'
 
 const normalizeSql = (sql) => sql.trim().replace(/\s+/g, ' ').toLowerCase()
 
-function CodingChallengeGame() {
+function CodingChallengeGame({ roomState, onEndGame }) {
+  // Determine if this is a real multiplayer session
+  const isMultiplayer = !!(roomState?.room?.roomCode)
+  const isHost = isMultiplayer ? roomState.isHost : true
+
   const {
     currentPlayerId,
     phase,
     countdown,
     players,
     leaderboard,
-    isHost,
     startGame,
     emitRoomEvent,
     updateScore,
     endGame,
-    playAgain,
     setStatus,
-  } = useGameRoom({ gameType: 'coding', roomId: 'year3-sem2-coding' })
+  } = useGameRoom({ gameType: 'coding', roomId: roomState?.room?.roomCode || 'year3-sem2-coding' })
 
   const sounds = useSoundEffects()
   const [roundIndex, setRoundIndex] = useState(0)
@@ -131,14 +133,31 @@ function CodingChallengeGame() {
     [],
   )
 
-  if (phase === 'lobby') {
+  // In multiplayer: skip the internal lobby, start immediately
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (isMultiplayer) { setRoundIndex(0); prepareRound(0); startGame() } }, [isMultiplayer])
+
+  // Build leaderboard with real player names in multiplayer
+  const multiplayerLeaderboard = useMemo(() => {
+    if (!isMultiplayer) return leaderboard
+    const roomPlayers = roomState.room.players || []
+    return roomPlayers
+      .map((p) => ({ id: p.userId, name: p.username, score: leaderboard.find((l) => l.id === p.userId)?.score ?? 0, rank: 0 }))
+      .sort((a, b) => b.score - a.score)
+      .map((p, i) => ({ ...p, rank: i + 1 }))
+  }, [isMultiplayer, roomState, leaderboard])
+
+  const displayLeaderboard = isMultiplayer ? multiplayerLeaderboard : leaderboard
+
+  // Only show internal lobby in solo mode
+  if (phase === 'lobby' && !isMultiplayer) {
     return (
       <GameShell
         title={gameTypeContent.coding.title}
         subtitle={gameTypeContent.coding.subtitle}
         phase={phase}
         countdown={countdown}
-        leaderboard={leaderboard}
+        leaderboard={displayLeaderboard}
       >
         <GameLobby
           players={players}
@@ -162,17 +181,14 @@ function CodingChallengeGame() {
         subtitle="Coding challenge complete."
         phase={phase}
         countdown={countdown}
-        leaderboard={leaderboard}
+        leaderboard={displayLeaderboard}
         topBar={topBar}
       >
         <EndGameScreen
-          players={leaderboard}
-          onPlayAgain={() => {
-            setRoundIndex(0)
-            prepareRound(0)
-            playAgain()
-          }}
+          players={displayLeaderboard}
+          onEndGame={onEndGame || (() => {})}
           winnerLabel="Final Score"
+          isHost={isHost}
         />
       </GameShell>
     )
@@ -184,7 +200,7 @@ function CodingChallengeGame() {
       subtitle={challenge.title}
       phase={phase}
       countdown={countdown}
-      leaderboard={leaderboard}
+      leaderboard={displayLeaderboard}
       topBar={topBar}
     >
       <RoundTimer

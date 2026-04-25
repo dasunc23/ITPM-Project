@@ -1,8 +1,9 @@
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import CodingChallengeGame from '../games/CodingChallenge/CodingChallengeGame'
 import MemoryMatchGame from '../games/MemoryMatch/MemoryMatchGame'
 import QuizBattleGame from '../games/QuizBattle/QuizBattleGame'
 import TypingRaceGame from '../games/TypingRace/TypingRaceGame'
+import axios from 'axios'
 
 const gameMap = {
   quiz: QuizBattleGame,
@@ -21,10 +22,29 @@ const gameTitles = {
 function PlayGamePage() {
   const { type } = useParams()
   const location = useLocation()
+  const navigate = useNavigate()
   const GameComponent = gameMap[type]
+
+  // Room state passed from Lobby SSE navigation
+  const roomState = location.state || null
+
   const backTo = location.state?.year && location.state?.semester
     ? `/student-games/year/${location.state.year}/semester/${location.state.semester}`
     : '/student-games/year/3/semester/2'
+
+  // Called by the game component when host clicks "End Game"
+  const handleEndGame = async () => {
+    if (roomState?.room?.roomCode && roomState?.userId) {
+      try {
+        await axios.post(`/api/rooms/end/${roomState.room.roomCode}`, {
+          userId: roomState.userId
+        })
+      } catch (err) {
+        console.error('[PlayGamePage] endGame failed:', err)
+      }
+    }
+    navigate('/join')
+  }
 
   if (!GameComponent) {
     return (

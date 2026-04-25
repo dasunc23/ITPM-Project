@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [toast, setToast] = useState(null);
+  const leaderboardRef = useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const logout = () => {
     localStorage.removeItem("loggedInUser");
@@ -24,6 +29,15 @@ const Home = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (location.hash === "#leaderboard") {
+      // small delay so layout is ready
+      setTimeout(() => {
+        leaderboardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    }
+  }, [location.hash]);
+
   // Dummy data for leaderboard
   const leaderboard = [
     { rank: 1, username: 'AlexGamer', points: 2450 },
@@ -40,6 +54,22 @@ const Home = () => {
     { code: 'GHI789', players: '2/4', game: 'Coding Arena' },
     { code: 'JKL012', players: '4/6', game: 'Memory Match' },
   ];
+
+  const notifications = useMemo(
+    () => [
+      { id: "pn1", title: "Match Invitation", message: "Room ABC123 is ready.", status: "Unread" },
+      { id: "pn2", title: "Achievement Unlocked", message: "You unlocked 'Fast Thinker'.", status: "Unread" },
+      { id: "pn3", title: "Weekly Summary", message: "You climbed 5 ranks this week.", status: "Read" },
+    ],
+    []
+  );
+  const unreadCount = notifications.filter((n) => n.status === "Unread").length;
+
+  const showToast = (title, message) => {
+    setToast({ title, message });
+    window.clearTimeout(showToast._t);
+    showToast._t = window.setTimeout(() => setToast(null), 2600);
+  };
 
   return (
     <div className="min-h-screen bg-[#040b1d] text-white">
@@ -58,8 +88,74 @@ const Home = () => {
                 <Link to="/" className="hover:text-[#a855f7] transition-colors">Home</Link>
                 <a href="/student-games" className="hover:text-[#a855f7] transition-colors">Games</a>
                 <a href="#leaderboard" className="hover:text-[#a855f7] transition-colors">Leaderboard</a>
+                <Link to="/join" className="hover:text-[#a855f7] transition-colors">Join Game</Link>
+                <Link to="/achievements" className="hover:text-[#a855f7] transition-colors">Achievements</Link>
+                <Link to="/notifications" className="hover:text-[#a855f7] transition-colors">Notifications</Link>
                 {isLoggedIn && <Link to="/payment" className="hover:text-[#a855f7] transition-colors">Payment</Link>}
                 {userRole === "admin" && <Link to="/dashboard" className="hover:text-[#a855f7] transition-colors">Admin Dashboard</Link>}
+              </div>
+              <div className="hidden md:block relative">
+                <button
+                  type="button"
+                  onClick={() => setIsNotificationsOpen((v) => !v)}
+                  className="relative bg-white/10 border border-white/10 px-4 py-2 rounded-full hover:bg-white/15 transition"
+                >
+                  <span className="text-sm font-semibold">🔔</span>
+                  {unreadCount > 0 ? (
+                    <span className="absolute -top-2 -right-2 text-[10px] bg-[#ec4899] text-white px-2 py-0.5 rounded-full">
+                      {unreadCount}
+                    </span>
+                  ) : null}
+                </button>
+
+                {isNotificationsOpen ? (
+                  <div className="absolute right-0 mt-3 w-80 bg-[#0b1226] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+                      <p className="font-semibold">Notifications</p>
+                      <button
+                        type="button"
+                        onClick={() => setIsNotificationsOpen(false)}
+                        className="text-xs text-gray-300 hover:text-white"
+                      >
+                        Close
+                      </button>
+                    </div>
+                    <div className="max-h-80 overflow-auto">
+                      {notifications.map((n) => (
+                        <button
+                          key={n.id}
+                          type="button"
+                          onClick={() => showToast(n.title, n.message)}
+                          className="w-full text-left px-4 py-3 border-b border-white/5 hover:bg-white/5 transition"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="text-sm font-semibold">{n.title}</p>
+                            <span
+                              className={
+                                "text-[10px] px-2 py-0.5 rounded-full border " +
+                                (n.status === "Unread"
+                                  ? "bg-[#a855f7]/15 border-[#a855f7]/25 text-[#e9d5ff]"
+                                  : "bg-white/10 border-white/10 text-gray-200")
+                              }
+                            >
+                              {n.status}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-300 mt-1">{n.message}</p>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={() => navigate("/notifications")}
+                        className="w-full bg-gradient-to-r from-[#a855f7] to-[#ec4899] text-white px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-95 transition-opacity"
+                      >
+                        Open Notification Center
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
               <div className="hidden md:flex space-x-4">
                 {isLoggedIn ? (
@@ -86,8 +182,11 @@ const Home = () => {
           {isMenuOpen && (
             <div className="md:hidden bg-white/10 backdrop-blur-lg mt-4 rounded-lg p-4">
               <Link to="/" className="block py-2 hover:text-[#a855f7] transition-colors">Home</Link>
-              <a href="#games" className="block py-2 hover:text-[#a855f7] transition-colors">Games</a>
+              <Link to="/gamehome" className="block py-2 hover:text-[#a855f7] transition-colors">Games</Link>
               <a href="#leaderboard" className="block py-2 hover:text-[#a855f7] transition-colors">Leaderboard</a>
+              <Link to="/join" className="block py-2 hover:text-[#a855f7] transition-colors">Join Game</Link>
+              <Link to="/achievements" className="block py-2 hover:text-[#a855f7] transition-colors">Achievements</Link>
+              <Link to="/notifications" className="block py-2 hover:text-[#a855f7] transition-colors">Notifications</Link>
               {isLoggedIn && <Link to="/payment" className="block py-2 hover:text-[#a855f7] transition-colors">Payment</Link>}
               {userRole === "admin" && <Link to="/dashboard" className="block py-2 hover:text-[#a855f7] transition-colors">Admin Dashboard</Link>}
               {isLoggedIn ? (
@@ -164,7 +263,7 @@ const Home = () => {
           <h2 className="text-4xl font-bold text-center mb-16">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { step: 1, title: 'Create or Join Room', description: 'Start a new game or join an existing room with friends', icon: '1' },
+              { step: 1, title: 'Create or Join Game', description: 'Start a new game or join an existing room with friends', icon: '1' },
               { step: 2, title: 'Play in Real-Time', description: 'Compete against other students in live multiplayer matches', icon: '2' },
               { step: 3, title: 'Earn Points & Rank', description: 'Win games to earn points and climb the leaderboard', icon: '3' },
             ].map((item, index) => (
@@ -179,7 +278,7 @@ const Home = () => {
       </section>
 
       {/* Leaderboard Preview */}
-      <section id="leaderboard" className="py-24 px-6">
+      <section id="leaderboard" ref={leaderboardRef} className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl font-bold text-center mb-16">Top Players</h2>
           <div className="bg-white/10 backdrop-blur-lg border border-white/10 rounded-lg overflow-hidden mb-8">
@@ -203,7 +302,12 @@ const Home = () => {
             </table>
           </div>
           <div className="text-center">
-            <button className="bg-[#a855f7] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#ec4899] transition-colors">View Full Leaderboard</button>
+            <Link
+              to="/leaderboard"
+              className="inline-block bg-[#a855f7] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#ec4899] transition-colors"
+            >
+              View Full Leaderboard
+            </Link>
           </div>
         </div>
       </section>
@@ -242,8 +346,25 @@ const Home = () => {
               </div>
             ))}
           </div>
+          <div className="text-center mt-10">
+            <Link
+              to="/achievements"
+              className="inline-block bg-white/10 border border-white/10 text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-indigo-900 transition-all duration-300"
+            >
+              View All Achievements
+            </Link>
+          </div>
         </div>
       </section>
+
+      {toast ? (
+        <div className="fixed bottom-6 right-6 z-[60] w-[320px]">
+          <div className="bg-[#0b1226] border border-white/10 rounded-2xl shadow-2xl p-4">
+            <p className="font-semibold">{toast.title}</p>
+            <p className="text-sm text-gray-300 mt-1">{toast.message}</p>
+          </div>
+        </div>
+      ) : null}
 
       {/* Call-To-Action Section */}
       <section className="py-24 px-6 bg-gradient-to-r from-[#a855f7] to-[#ec4899]">

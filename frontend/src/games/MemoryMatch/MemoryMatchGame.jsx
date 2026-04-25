@@ -20,20 +20,22 @@ const shuffleCardsForLevel = (level) => {
   ])].sort(() => Math.random() - 0.5)
 }
 
-function MemoryMatchGame() {
+function MemoryMatchGame({ roomState, onEndGame }) {
+  // Determine if this is a real multiplayer session
+  const isMultiplayer = !!(roomState?.room?.roomCode)
+  const isHost = isMultiplayer ? roomState.isHost : true
+
   const {
     currentPlayerId,
     phase,
     countdown,
     players,
     leaderboard,
-    isHost,
     startGame,
     updateScore,
     endGame,
-    playAgain,
     setStatus,
-  } = useGameRoom({ gameType: 'memory', roomId: 'year3-sem2-memory' })
+  } = useGameRoom({ gameType: 'memory', roomId: roomState?.room?.roomCode || 'year3-sem2-memory' })
 
   const sounds = useSoundEffects()
   const [currentLevel, setCurrentLevel] = useState(1)
@@ -131,14 +133,15 @@ function MemoryMatchGame() {
     [currentLevel, totalLevels],
   )
 
-  if (phase === 'lobby') {
+  // Only show internal lobby in solo mode
+  if (phase === 'lobby' && !isMultiplayer) {
     return (
       <GameShell
         title={gameTypeContent.memory.title}
         subtitle={gameTypeContent.memory.subtitle}
         phase={phase}
         countdown={countdown}
-        leaderboard={leaderboard}
+        leaderboard={displayLeaderboard}
       >
         <GameLobby
           players={players}
@@ -162,10 +165,15 @@ function MemoryMatchGame() {
         subtitle="Board completed."
         phase={phase}
         countdown={countdown}
-        leaderboard={leaderboard}
+        leaderboard={displayLeaderboard}
         topBar={topBar}
       >
-        <EndGameScreen players={leaderboard} onPlayAgain={playAgain} winnerLabel="Final Score" />
+        <EndGameScreen
+          players={displayLeaderboard}
+          onEndGame={onEndGame || (() => {})}
+          winnerLabel="Final Score"
+          isHost={isHost}
+        />
       </GameShell>
     )
   }
@@ -176,7 +184,7 @@ function MemoryMatchGame() {
       subtitle="Flip cards and match table relationships."
       phase={phase}
       countdown={countdown}
-      leaderboard={leaderboard}
+      leaderboard={displayLeaderboard}
       topBar={topBar}
     >
       <RoundTimer duration={60} isRunning={phase === 'playing'} onComplete={endGame} resetKey={timerKey} />

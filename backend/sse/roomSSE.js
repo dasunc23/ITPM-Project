@@ -4,33 +4,37 @@ const roomClients = {};
 
 // ─── Add a client to a room ───────────────────────
 const addClient = (roomCode, res) => {
-  if (!roomClients[roomCode]) {
-    roomClients[roomCode] = [];
+  const code = roomCode.toUpperCase();
+  if (!roomClients[code]) {
+    roomClients[code] = [];
   }
-  roomClients[roomCode].push(res);
+  roomClients[code].push(res);
 };
 
 // ─── Remove a client from a room ─────────────────
 const removeClient = (roomCode, res) => {
-  if (!roomClients[roomCode]) return;
-  roomClients[roomCode] = roomClients[roomCode].filter(client => client !== res);
+  const code = roomCode.toUpperCase();
+  if (!roomClients[code]) return;
+  roomClients[code] = roomClients[code].filter(client => client !== res);
 
   // Clean up empty rooms
-  if (roomClients[roomCode].length === 0) {
-    delete roomClients[roomCode];
+  if (roomClients[code].length === 0) {
+    delete roomClients[code];
   }
 };
 
 // ─── Broadcast to all clients in a room ──────────
 const broadcastToRoom = (roomCode, data) => {
-  if (!roomClients[roomCode]) return;
+  const code = roomCode.toUpperCase();
+  if (!roomClients[code]) return;
   const message = `data: ${JSON.stringify(data)}\n\n`;
-  roomClients[roomCode].forEach(client => client.write(message));
+  roomClients[code].forEach(client => client.write(message));
 };
 
 // ─── SSE Route Handler ────────────────────────────
 const roomSSEHandler = (req, res) => {
   const { roomCode } = req.params;
+  const code = roomCode.toUpperCase();
 
   // Set SSE headers
   res.setHeader('Content-Type', 'text/event-stream');
@@ -40,14 +44,14 @@ const roomSSEHandler = (req, res) => {
   res.flushHeaders();
 
   // Send initial connection confirmation
-  res.write(`data: ${JSON.stringify({ type: 'connected', message: 'SSE Connected' })}\n\n`);
+  res.write(`data: ${JSON.stringify({ type: 'connected', message: 'SSE Connected', roomCode: code })}\n\n`);
 
   // Add this client to the room
-  addClient(roomCode, res);
+  addClient(code, res);
 
   // Remove client when connection closes
   req.on('close', () => {
-    removeClient(roomCode, res);
+    removeClient(code, res);
   });
 };
 

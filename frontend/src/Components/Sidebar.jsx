@@ -9,6 +9,9 @@ function Sidebar({ menuItems = [] }) {
     { label: "Rooms", href: "/admin/rooms" },
     { label: "Games Category", href: "/admin/games-category" },
     { label: "Achievements", href: "/admin/achievements" },
+    { label: "Leaderboard", href: "/home#leaderboard" },
+    { label: "User Achievements", href: "/achievements" },
+    { label: "Notifications", href: "/notifications" },
     { label: "Payment", href: "/payment" },
   ];
 

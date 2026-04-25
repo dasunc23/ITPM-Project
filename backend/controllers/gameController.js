@@ -1,5 +1,5 @@
-import Game from "../models/Game.js";
-import Module from "../models/Module.js";
+import Game from '../models/Game.js';
+import Module from '../models/Module.js';
 
 export const getGames = async (req, res, next) => {
   try {
@@ -27,3 +27,5 @@ export const getGames = async (req, res, next) => {
     next(error);
   }
 };
+
+

@@ -24,7 +24,7 @@ function SemesterCard({ year, semester, isActive }) {
         </p>
       </div>
 
-      <div className="text-sm font-medium text-indigo-100 transition-transform duration-300 group-hover:translate-x-1">
+      <div className="text-sm font-medium text-fuchsia-300 transition-transform duration-300 group-hover:translate-x-1">
         View modules →
       </div>
     </Link>

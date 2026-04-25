@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 function GameCard({ game, moduleItem, year = 3, semester = 2 }) {
   return (
     <Link
-      to={`/student-games/play/${game.type}`}
+      to={`/create?game=${game.type}&gameName=${encodeURIComponent(game.name)}`}
       state={{ game, module: moduleItem, year, semester }}
       className="glass-card glass-card-hover group overflow-hidden"
     >
@@ -13,7 +13,7 @@ function GameCard({ game, moduleItem, year = 3, semester = 2 }) {
           alt={game.name}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#040b1d] via-[#040b1d]/30 to-transparent" />
         <span className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
           {game.type}
         </span>
@@ -22,7 +22,7 @@ function GameCard({ game, moduleItem, year = 3, semester = 2 }) {
       <div className="space-y-4 p-6">
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-xl font-semibold text-white">{game.name}</h3>
-          <span className="rounded-full bg-white/8 px-3 py-1 text-xs text-indigo-100">
+          <span className="rounded-full bg-[#a855f7]/15 px-3 py-1 text-xs text-fuchsia-300">
             {game.difficulty}
           </span>
         </div>

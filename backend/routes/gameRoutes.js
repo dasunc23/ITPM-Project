@@ -3,6 +3,6 @@ import { getGames } from "../controllers/gameController.js";
 
 const router = express.Router();
 
-router.get("/", getGames);
+router.get('/', getGames);
 
 export default router;

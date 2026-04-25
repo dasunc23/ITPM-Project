@@ -6,6 +6,7 @@ import {
    PieChart, Pie, Cell,
 } from 'recharts';
 import Sidebar from '../Components/Sidebar';
+import { Link } from "react-router-dom";
 
 const COLORS = ['#a855f7', '#c084fc', '#e9d5ff', '#f3e8ff'];
 
@@ -77,6 +78,26 @@ function AnalyticsDashboard() {
             <header className="flex justify-between items-center mb-10">
                <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
                <div className="flex items-center gap-6">
+                  <div className="hidden lg:flex items-center gap-3">
+                     <Link
+                        to="/home#leaderboard"
+                        className="bg-white border border-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-50 transition"
+                     >
+                        Leaderboard (Home)
+                     </Link>
+                     <Link
+                        to="/leaderboard"
+                        className="bg-[#a855f7] text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#9333ea] transition"
+                     >
+                        Full Leaderboard
+                     </Link>
+                     <Link
+                        to="/achievements"
+                        className="bg-white border border-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-50 transition"
+                     >
+                        Achievements
+                     </Link>
+                  </div>
                   <div className="relative">
                      <input type="text" placeholder="Search stock, order, etc" className="bg-white rounded-full py-2.5 px-6 pl-10 focus:outline-none w-72 text-sm text-gray-600 border border-gray-200 shadow-sm" />
                      <svg className="w-4 h-4 absolute left-4 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>

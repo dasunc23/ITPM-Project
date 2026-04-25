@@ -8,3 +8,5 @@ export const getSemesters = async (req, res, next) => {
     next(error);
   }
 };
+
+
