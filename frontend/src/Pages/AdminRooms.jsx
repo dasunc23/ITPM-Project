@@ -16,10 +16,10 @@ const AdminRooms = () => {
       setLoading(true);
       // Use relative path to leverage the proxy in package.json
       const res = await axios.get("/api/rooms/admin/all");
-      console.log("[AdminRooms] Fetched rooms:", res.data.rooms);
+
       setRooms(res.data.rooms);
     } catch (error) {
-      console.error("[AdminRooms] Error fetching rooms:", error);
+
     } finally {
       setLoading(false);
     }
@@ -31,7 +31,7 @@ const AdminRooms = () => {
         await axios.delete(`/api/rooms/admin/${roomCode}`);
         fetchRooms();
       } catch (error) {
-        console.error("[AdminRooms] Error deleting room:", error);
+
       }
     }
   };

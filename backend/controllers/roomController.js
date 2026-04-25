@@ -32,14 +32,14 @@ const createRoom = async (req, res) => {
     });
 
     if (existingRoom) {
-      console.log(`[CreateRoom] BLOCKER TRIGGERED: User ${userId} is already in room ${existingRoom.roomCode} (Status: ${existingRoom.status}, Host: ${existingRoom.hostId})`);
+
       return res.status(400).json({
         message: 'You are already in an active game room. Finish or wait for it to expire before creating a new one.',
         roomCode: existingRoom.roomCode
       });
     }
 
-    console.log(`[CreateRoom] Creating room for userId: ${userId}, username: ${username}`);
+
 
     const roomCode = await generateRoomCode();
 
@@ -52,7 +52,7 @@ const createRoom = async (req, res) => {
     });
 
     await room.save();
-    console.log(`[CreateRoom] Room created: ${roomCode} for hostId: ${room.hostId}`);
+
 
     res.status(201).json({
       message: 'Room created successfully',
@@ -107,7 +107,7 @@ const joinRoom = async (req, res) => {
     });
 
     if (existingRoomCheck) {
-      console.log(`[JoinRoom] BLOCKER TRIGGERED: User ${userId} is already in room ${existingRoomCheck.roomCode} (Status: ${existingRoomCheck.status}, Host: ${existingRoomCheck.hostId})`);
+
       return res.status(400).json({
         message: 'You are already in another active game room. Finish it or wait for it to expire.',
         roomCode: existingRoomCheck.roomCode
@@ -261,7 +261,7 @@ const getRoomsByHost = async (req, res) => {
       return res.status(400).json({ message: 'userId is required' });
     }
 
-    console.log(`[getRoomsByHost] Searching for userId: ${userId} in hostId or players.userId`);
+
 
     const query = {
       $or: [
@@ -274,10 +274,7 @@ const getRoomsByHost = async (req, res) => {
 
     const rooms = await Room.find(query).sort({ createdAt: -1 }).lean();
 
-    console.log(`[getRoomsByHost] Query returned ${rooms.length} rooms for userId: ${userId}`);
-    if (rooms.length > 0) {
-      console.log(`[getRoomsByHost] Room IDs: ${rooms.map(r => r.roomCode).join(', ')}`);
-    }
+
 
     res.status(200).json({ rooms });
 
@@ -315,7 +312,7 @@ const endGame = async (req, res) => {
     room.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); 
     await room.save();
 
-    console.log(`[EndGame] Room ${roomCode} deleted by host ${userId}`);
+
 
     res.status(200).json({ message: 'Game ended and room deleted.' });
 
@@ -330,7 +327,7 @@ const clearActiveRooms = async (req, res) => {
     const { userId } = req.body;
     if (!userId) return res.status(400).json({ message: 'userId is required' });
 
-    console.log(`[ClearActiveRooms] Clearing all sessions for userId: ${userId}`);
+
 
     const rooms = await Room.find({
       "players.userId": new mongoose.Types.ObjectId(userId),
