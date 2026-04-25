@@ -75,7 +75,10 @@ const joinRoom = async (req, res) => {
       return res.status(400).json({ message: 'userId and username are required' });
     }
 
-    const room = await Room.findOne({ roomCode: roomCode.toUpperCase() });
+    const room = await Room.findOne({ 
+      roomCode: roomCode.toUpperCase(),
+      status: { $ne: 'finished' }
+    });
 
     if (!room) {
       return res.status(404).json({ message: 'Room not found. Check the code and try again' });
@@ -141,7 +144,10 @@ const getRoom = async (req, res) => {
   try {
     const { roomCode } = req.params;
 
-    const room = await Room.findOne({ roomCode: roomCode.toUpperCase() });
+    const room = await Room.findOne({ 
+      roomCode: roomCode.toUpperCase(),
+      status: { $ne: 'finished' }
+    });
 
     if (!room) {
       return res.status(404).json({ message: 'Room not found' });
@@ -170,8 +176,14 @@ const leaveRoom = async (req, res) => {
     room.lastActivity = Date.now();
 
     if (room.players.length === 0) {
-      await Room.deleteOne({ roomCode: roomCode.toUpperCase() });
-      return res.status(200).json({ message: 'Room deleted as no players remain' });
+      if (room.status === 'waiting') {
+        await Room.deleteOne({ roomCode: roomCode.toUpperCase() });
+        return res.status(200).json({ message: 'Room deleted as no players remain' });
+      } else {
+        // If it was already in-progress or finished, keep it for history
+        await room.save();
+        return res.status(200).json({ message: 'Room preserved in history' });
+      }
     }
 
     const hostStillIn = room.players.find(p => p.userId.toString() === room.hostId.toString());
@@ -296,8 +308,12 @@ const endGame = async (req, res) => {
       roomCode: roomCode.toUpperCase()
     });
 
-    // Delete the room
-    await Room.deleteOne({ roomCode: roomCode.toUpperCase() });
+    // Update room status to finished instead of deleting to preserve history
+    room.status = 'finished';
+    room.lastActivity = Date.now();
+    // Keep it for 30 days in history (TTL index will handle it)
+    room.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); 
+    await room.save();
 
     console.log(`[EndGame] Room ${roomCode} deleted by host ${userId}`);
 
@@ -325,7 +341,11 @@ const clearActiveRooms = async (req, res) => {
       room.players = room.players.filter(p => String(p.userId) !== String(userId));
 
       if (room.players.length === 0) {
-        await Room.deleteOne({ _id: room._id });
+        if (room.status === 'waiting') {
+          await Room.deleteOne({ _id: room._id });
+        } else {
+          await room.save();
+        }
       } else {
         // If host left, assign new host
         if (String(room.hostId) === String(userId)) {
@@ -347,4 +367,41 @@ const clearActiveRooms = async (req, res) => {
   }
 };
 
-export { createRoom, joinRoom, getRoom, leaveRoom, startGame, getRoomsByHost, clearActiveRooms, endGame };
+// ─── 9. GET ALL ROOMS (Admin) ──────────────────
+const getAllRooms = async (req, res) => {
+  try {
+    const rooms = await Room.find().sort({ createdAt: -1 }).lean();
+    res.status(200).json({ rooms });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// ─── 10. DELETE ROOM (Admin) ───────────────────
+const deleteRoom = async (req, res) => {
+  try {
+    const { roomCode } = req.params;
+    const result = await Room.deleteOne({ roomCode: roomCode.toUpperCase() });
+    
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+
+    res.status(200).json({ message: 'Room deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export { 
+  createRoom, 
+  joinRoom, 
+  getRoom, 
+  leaveRoom, 
+  startGame, 
+  getRoomsByHost, 
+  clearActiveRooms, 
+  endGame,
+  getAllRooms,
+  deleteRoom
+};

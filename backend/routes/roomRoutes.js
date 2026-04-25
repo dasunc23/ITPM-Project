@@ -7,12 +7,19 @@ import {
   startGame,
   getRoomsByHost,
   clearActiveRooms,
-  endGame
+  endGame,
+  getAllRooms,
+  deleteRoom
 } from '../controllers/roomController.js';
 import { roomSSEHandler } from '../sse/roomSSE.js';
 
 const router = express.Router();
 
+// Admin Routes
+router.get('/admin/all', getAllRooms);
+router.delete('/admin/:roomCode', deleteRoom);
+
+// Standard Routes
 router.post('/create', createRoom);
 router.post('/join/:roomCode', joinRoom);
 router.get('/host/:userId', getRoomsByHost);
