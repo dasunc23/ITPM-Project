@@ -4,7 +4,10 @@ function QuestionCard({ question, selectedIndex, revealAnswer, onSelect, stats, 
   return (
     <div className="glass-card space-y-6 p-6 sm:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <span className="badge">Question Round</span>
+        <div className="flex items-center gap-3">
+          <span className="badge">Level {question.level || 1}</span>
+          <span className="text-xs text-slate-400">Question {question.level || 1} of 10</span>
+        </div>
         <span className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs text-slate-300">
           Fastest: {fastestPlayer || 'Waiting...'}
         </span>

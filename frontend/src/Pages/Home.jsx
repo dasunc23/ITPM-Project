@@ -100,7 +100,7 @@ const Home = () => {
             <div className="flex items-center space-x-10">
               <div className="hidden md:flex space-x-8">
                 <Link to="/" className="hover:text-[#a855f7] transition-colors">Home</Link>
-                <Link to="/gamehome" className="hover:text-[#a855f7] transition-colors">Games</Link>
+                <a href="/student-games" className="hover:text-[#a855f7] transition-colors">Games</a>
                 <a href="#leaderboard" className="hover:text-[#a855f7] transition-colors">Leaderboard</a>
                 <Link to="/join" className="hover:text-[#a855f7] transition-colors">Join Game</Link>
                 <Link to="/achievements" className="hover:text-[#a855f7] transition-colors">Achievements</Link>

@@ -8,11 +8,17 @@ import { useGameRoom } from '../useGameRoom'
 import { useSoundEffects } from '../useSoundEffects'
 import MemoryCard from './MemoryCard'
 
-const shuffleCards = () =>
-  [...memoryPairs.flatMap((pair) => [
-    { id: `${pair.pairId}-a`, pairId: pair.pairId, label: pair.left },
-    { id: `${pair.pairId}-b`, pairId: pair.pairId, label: pair.right },
+// Get pairs for a specific level (9 pairs = 18 cards)
+const getPairsForLevel = (level) => memoryPairs.filter(pair => pair.level === level)
+
+// Shuffle cards for a specific level
+const shuffleCardsForLevel = (level) => {
+  const levelPairs = getPairsForLevel(level)
+  return [...levelPairs.flatMap((pair) => [
+    { id: `${pair.pairId}-a`, pairId: pair.pairId, label: pair.left, category: pair.category, level: pair.level },
+    { id: `${pair.pairId}-b`, pairId: pair.pairId, label: pair.right, category: pair.category, level: pair.level },
   ])].sort(() => Math.random() - 0.5)
+}
 
 function MemoryMatchGame({ roomState, onEndGame }) {
   // Determine if this is a real multiplayer session
@@ -32,43 +38,32 @@ function MemoryMatchGame({ roomState, onEndGame }) {
   } = useGameRoom({ gameType: 'memory', roomId: roomState?.room?.roomCode || 'year3-sem2-memory' })
 
   const sounds = useSoundEffects()
-  const [cards, setCards] = useState(shuffleCards)
+  const [currentLevel, setCurrentLevel] = useState(1)
+  const [cards, setCards] = useState(() => shuffleCardsForLevel(1))
   const [flipped, setFlipped] = useState([])
   const [matched, setMatched] = useState([])
   const [timerKey, setTimerKey] = useState(0)
 
-  // In multiplayer: skip the internal lobby, start immediately
-  useEffect(() => {
-    if (isMultiplayer) {
-      prepareBoard()
-      startGame()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMultiplayer])
+  const totalPairs = 8
+  const totalLevels = 3
 
-  // Build leaderboard with real player names in multiplayer
-  const multiplayerLeaderboard = useMemo(() => {
-    if (!isMultiplayer) return leaderboard
-    const roomPlayers = roomState.room.players || []
-    return roomPlayers
-      .map((p) => ({
-        id: p.userId,
-        name: p.username,
-        score: leaderboard.find((l) => l.id === p.userId)?.score ?? 0,
-        rank: 0,
-      }))
-      .sort((a, b) => b.score - a.score)
-      .map((p, i) => ({ ...p, rank: i + 1 }))
-  }, [isMultiplayer, roomState, leaderboard])
-
-  const displayLeaderboard = isMultiplayer ? multiplayerLeaderboard : leaderboard
-
-  const prepareBoard = () => {
-    setCards(shuffleCards())
+  const prepareBoard = (level = currentLevel) => {
+    setCards(shuffleCardsForLevel(level))
     setFlipped([])
     setMatched([])
     setTimerKey((previous) => previous + 1)
-    setStatus('Schema memory board is live.')
+    setStatus(`Level ${level} - Schema memory board is live.`)
+  }
+
+  const goToNextLevel = () => {
+    if (currentLevel < totalLevels) {
+      const nextLevel = currentLevel + 1
+      setCurrentLevel(nextLevel)
+      prepareBoard(nextLevel)
+      setStatus(`Level ${nextLevel} - New schema pairs loaded!`)
+    } else {
+      endGame()
+    }
   }
 
   const handleCardClick = (card) => {
@@ -92,7 +87,14 @@ function MemoryMatchGame({ roomState, onEndGame }) {
       window.setTimeout(() => {
         if (firstCard.pairId === secondCard.pairId) {
           setMatched((previous) => [...previous, firstId, secondId])
-          updateScore(currentPlayerId, 50)
+          // Different points based on category
+          const categoryPoints = {
+            'Primary Key': 60,
+            'Foreign Key': 50,
+            'Relationship': 40,
+          }
+          const points = categoryPoints[firstCard.category] || 50
+          updateScore(currentPlayerId, points)
           sounds.playSuccess()
         } else {
           sounds.playError()
@@ -104,22 +106,31 @@ function MemoryMatchGame({ roomState, onEndGame }) {
 
   useEffect(() => {
     if (phase === 'playing' && matched.length === cards.length && cards.length > 0) {
-      const timer = window.setTimeout(() => endGame(), 600)
-      return () => window.clearTimeout(timer)
+      // Check if there are more levels
+      if (currentLevel < totalLevels) {
+        const timer = window.setTimeout(() => {
+          goToNextLevel()
+        }, 1500)
+        return () => window.clearTimeout(timer)
+      } else {
+        const timer = window.setTimeout(() => endGame(), 600)
+        return () => window.clearTimeout(timer)
+      }
     }
 
     return undefined
-  }, [phase, matched, cards, endGame])
+  }, [phase, matched, cards, endGame, currentLevel, totalLevels])
 
   const topBar = useMemo(
     () => (
       <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-right">
-        <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Scoring</p>
-        <p className="mt-2 text-sm text-slate-300">Correct match = 50 pts</p>
-        <p className="text-sm text-slate-300">Find all pairs before time ends</p>
+        <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Level {currentLevel} of {totalLevels}</p>
+        <p className="mt-2 text-sm text-slate-300">Primary Key match = 60 pts</p>
+        <p className="text-sm text-slate-300">Foreign Key match = 50 pts</p>
+        <p className="text-sm text-slate-300">Relationship match = 40 pts</p>
       </div>
     ),
-    [],
+    [currentLevel, totalLevels],
   )
 
   // Only show internal lobby in solo mode
@@ -135,9 +146,10 @@ function MemoryMatchGame({ roomState, onEndGame }) {
         <GameLobby
           players={players}
           title={gameTypeContent.memory.title}
-          subtitle="Flip schema cards, find the matching relationships, and clear the board on your own."
+          subtitle={`Flip schema cards across 3 levels. Each level has 8 pairs (16 cards). Clear all levels to win!`}
           onStart={() => {
-            prepareBoard()
+            setCurrentLevel(1)
+            prepareBoard(1)
             startGame()
           }}
           isHost={isHost}
@@ -175,12 +187,12 @@ function MemoryMatchGame({ roomState, onEndGame }) {
       leaderboard={displayLeaderboard}
       topBar={topBar}
     >
-      <RoundTimer duration={75} isRunning={phase === 'playing'} onComplete={endGame} resetKey={timerKey} />
+      <RoundTimer duration={60} isRunning={phase === 'playing'} onComplete={endGame} resetKey={timerKey} />
       <div className="glass-card space-y-4 p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h2 className="text-2xl font-semibold text-white">Schema Board</h2>
           <span className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-slate-300">
-            Matches Found: {matched.length / 2}/{memoryPairs.length}
+            Matches Found: {matched.length / 2}/{totalPairs}
           </span>
         </div>
         <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-4">

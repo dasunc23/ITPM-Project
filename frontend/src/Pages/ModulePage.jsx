@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import ErrorState from '../Components/ErrorState'
 import GameCard from '../Components/GameCard'
 import LoadingSpinner from '../Components/LoadingSpinner'
@@ -47,7 +47,23 @@ function ModulePage() {
   }, [year, sem])
 
   return (
-    <main className="app-shell">
+    <div className="min-h-screen bg-[#040b1d]">
+      {/* Main Navbar */}
+      <nav className="fixed top-0 w-full z-50 bg-black/30 backdrop-blur-xl border-b border-[#a855f7]/20">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex justify-between items-center">
+            <Link to="/home" className="text-2xl font-bold text-[#a855f7]">GameHub</Link>
+            <div className="flex items-center space-x-4">
+              <Link to="/home" className="text-white hover:text-[#a855f7] transition-colors text-sm">Home</Link>
+              <Link to="/student-games" className="text-[#a855f7] hover:text-[#ec4899] transition-colors text-sm font-semibold">Games</Link>
+              <Link to="/dashboard" className="text-white hover:text-[#a855f7] transition-colors text-sm">Dashboard</Link>
+              <Link to="/payment" className="text-white hover:text-[#a855f7] transition-colors text-sm">Payment</Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <main className="app-shell pt-20">
       <div className="page-wrap gap-8">
         <PageHeader
           eyebrow={`Year ${year} / Semester ${sem}`}
@@ -121,6 +137,7 @@ function ModulePage() {
         </section>
       </div>
     </main>
+    </div>
   )
 }
 
