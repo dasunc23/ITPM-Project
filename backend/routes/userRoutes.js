@@ -1,5 +1,16 @@
 import express from "express";
 import User from "../models/User.js";
+import express from 'express';
+import {
+  getUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  getLeaderboard,
+  updateScore,
+  overrideGameStats,
+  resetAllLeaderboards
+} from '../controllers/userController.js';
 
 const router = express.Router();
 
@@ -27,5 +38,13 @@ router.delete("/:id", async (req, res) => {
   await User.findByIdAndDelete(req.params.id);
   res.json({ message: "User deleted" });
 });
+router.get('/leaderboard', getLeaderboard);
+router.post('/leaderboard/reset', resetAllLeaderboards);
+router.put('/score', updateScore);
+router.put('/:id/gameStats', overrideGameStats);
+
+router.route('/:id')
+  .put(updateUser)
+  .delete(deleteUser);
 
 export default router;

@@ -10,6 +10,8 @@ import userRoutes from "./routes/userRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 
 import roomRoutes from './routes/roomRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import achievementRoutes from './routes/achievementRoutes.js';
 import connectDB from './config/db.js';
 
 // Load environment variables
@@ -62,6 +64,16 @@ app.get('/api/health', (req, res) => {
     uptime: process.uptime()
   });
 });
+
+// ============================================
+// API ROUTES (added feature routes)
+// ============================================
+
+app.use('/api/semesters', semesterRoutes);
+app.use('/api/modules', moduleRoutes);
+app.use('/api/games', gameRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/achievements', achievementRoutes);
 
 // ============================================
 // ERROR HANDLING

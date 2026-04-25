@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -38,14 +39,21 @@ const Home = () => {
     }
   }, [location.hash]);
 
-  // Dummy data for leaderboard
-  const leaderboard = [
-    { rank: 1, username: 'AlexGamer', points: 2450 },
-    { rank: 2, username: 'QuizMaster', points: 2380 },
-    { rank: 3, username: 'CodeNinja', points: 2320 },
-    { rank: 4, username: 'TypeFast', points: 2280 },
-    { rank: 5, username: 'MemoryKing', points: 2250 },
-  ];
+  const [leaderboard, setLeaderboard] = useState([]);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/users/leaderboard");
+        // Sort by points across all games for the mini-preview, or just take top 5
+        const sorted = [...res.data].sort((a, b) => b.points - a.points);
+        setLeaderboard(sorted.slice(0, 5));
+      } catch (error) {
+        console.error("Failed to fetch leaderboard", error);
+      }
+    };
+    fetchLeaderboard();
+  }, []);
 
   // Dummy data for live rooms
   const liveRooms = [
@@ -55,14 +63,20 @@ const Home = () => {
     { code: 'JKL012', players: '4/6', game: 'Memory Match' },
   ];
 
-  const notifications = useMemo(
-    () => [
-      { id: "pn1", title: "Match Invitation", message: "Room ABC123 is ready.", status: "Unread" },
-      { id: "pn2", title: "Achievement Unlocked", message: "You unlocked 'Fast Thinker'.", status: "Unread" },
-      { id: "pn3", title: "Weekly Summary", message: "You climbed 5 ranks this week.", status: "Read" },
-    ],
-    []
-  );
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/notifications");
+        setNotifications(res.data);
+      } catch (error) {
+        console.error("Failed to fetch notifications", error);
+      }
+    };
+    fetchNotifications();
+  }, []);
+
   const unreadCount = notifications.filter((n) => n.status === "Unread").length;
 
   const showToast = (title, message) => {
@@ -121,9 +135,9 @@ const Home = () => {
                       </button>
                     </div>
                     <div className="max-h-80 overflow-auto">
-                      {notifications.map((n) => (
+                      {notifications.map((n, index) => (
                         <button
-                          key={n.id}
+                          key={n._id || index}
                           type="button"
                           onClick={() => showToast(n.title, n.message)}
                           className="w-full text-left px-4 py-3 border-b border-white/5 hover:bg-white/5 transition"
@@ -286,6 +300,7 @@ const Home = () => {
               <thead className="bg-white/5">
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-white">Rank</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-white">Game</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-white">Username</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-white">Points</th>
                 </tr>
@@ -293,7 +308,8 @@ const Home = () => {
               <tbody>
                 {leaderboard.map((player, index) => (
                   <tr key={index} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 text-sm text-white">#{player.rank}</td>
+                    <td className="px-6 py-4 text-sm text-white">#{index + 1}</td>
+                    <td className="px-6 py-4 text-sm text-white">{player.game}</td>
                     <td className="px-6 py-4 text-sm text-white">{player.username}</td>
                     <td className="px-6 py-4 text-sm text-white">{player.points}</td>
                   </tr>

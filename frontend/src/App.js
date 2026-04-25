@@ -23,6 +23,8 @@ import Lobby from './Pages/Lobby';
 import Leaderboard from "./Pages/Leaderboard";
 import Achievements from "./Pages/Achievements";
 import Notifications from "./Pages/Notifications";
+import AdminLeaderboard from "./Pages/AdminLeaderboard";
+import AdminNotifications from "./Pages/AdminNotifications";
 
 function GameHome() {
   return (
@@ -82,6 +84,12 @@ function App() {
       <Route path="/admin/achievements" element={<ProtectedRoute requireAdmin={true}><AdminAchievements /></ProtectedRoute>} />
 
       {/* Protected Routes - Student Games */}
+      <Route path="/admin/leaderboard" element={<ProtectedRoute requireAdmin={true}><AdminLeaderboard /></ProtectedRoute>} />
+      <Route path="/admin/notifications" element={<ProtectedRoute requireAdmin={true}><AdminNotifications /></ProtectedRoute>} />
+      <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
+      <Route path="/leaderboard" element={<Leaderboard />} />
+      <Route path="/achievements" element={<Achievements />} />
+      <Route path="/notifications" element={<Notifications />} />
       <Route path="/student-games" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
       <Route path="/student-games/year/:year" element={<ProtectedRoute><SemesterPage /></ProtectedRoute>} />
       <Route path="/student-games/year/:year/semester/:sem" element={<ProtectedRoute><ModulePage /></ProtectedRoute>} />
