@@ -5,9 +5,8 @@ function Sidebar({ menuItems = [] }) {
   const defaultMenuItems = [
     { label: "Home", href: "/home" },
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Leaderboard", href: "/home#leaderboard" },
-    { label: "User Achievements", href: "/achievements" },
-    { label: "Notifications", href: "/notifications" },
+    { label: "Leaderboard", href: "/admin/leaderboard" },
+    { label: "Notifications", href: "/admin/notifications" },
     { label: "Users", href: "/admin" },
     { label: "Rooms", href: "/admin/rooms" },
     { label: "Games Category", href: "/admin/games-category" },

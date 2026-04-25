@@ -18,6 +18,8 @@ import PaymentPage from "./Pages/PaymentPage";
 import Leaderboard from "./Pages/Leaderboard";
 import Achievements from "./Pages/Achievements";
 import Notifications from "./Pages/Notifications";
+import AdminLeaderboard from "./Pages/AdminLeaderboard";
+import AdminNotifications from "./Pages/AdminNotifications";
 
 function App() {
   return (
@@ -31,6 +33,8 @@ function App() {
       <Route path="/admin/rooms" element={<ProtectedRoute requireAdmin={true}><AdminRooms /></ProtectedRoute>} />
       <Route path="/admin/games-category" element={<ProtectedRoute requireAdmin={true}><AdminGamesCategory /></ProtectedRoute>} />
       <Route path="/admin/achievements" element={<ProtectedRoute requireAdmin={true}><AdminAchievements /></ProtectedRoute>} />
+      <Route path="/admin/leaderboard" element={<ProtectedRoute requireAdmin={true}><AdminLeaderboard /></ProtectedRoute>} />
+      <Route path="/admin/notifications" element={<ProtectedRoute requireAdmin={true}><AdminNotifications /></ProtectedRoute>} />
       <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
       <Route path="/leaderboard" element={<Leaderboard />} />
       <Route path="/achievements" element={<Achievements />} />

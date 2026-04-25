@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { getSocket } from '../services/socket'
 import { multiplayerPlayers } from './gameData'
+import axios from 'axios'
 
 const clonePlayers = () => multiplayerPlayers.map((player) => ({ ...player }))
 
@@ -106,7 +107,36 @@ export const useGameRoom = ({ gameType, roomId }) => {
     emitRoomEvent('endGame', {
       scoreboard: players.map(({ id, score }) => ({ id, score })),
     })
-  }, [emitRoomEvent, players])
+
+    const userStr = localStorage.getItem("loggedInUser");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        const myScoreObj = players.find(p => p.id === currentPlayerId);
+        const myScore = myScoreObj ? myScoreObj.score : 0;
+        
+        // Let's assume you win if your score is greater than 0 and >= everyone else's
+        const isWin = myScore > 0 && players.every(p => p.id === currentPlayerId || p.score <= myScore);
+
+        const gameNameMap = {
+          quiz: "Quiz Battle",
+          typing: "Typing Speed",
+          coding: "Coding Arena",
+          memory: "Memory Match"
+        };
+
+        axios.put('http://localhost:5000/api/users/score', {
+          userId: user._id,
+          game: gameNameMap[gameType] || "Quiz Battle",
+          points: myScore,
+          isWin: isWin
+        }).catch(err => console.error("Failed to save score:", err));
+      } catch (err) {
+        console.error("Error parsing user or saving score", err);
+      }
+    }
+
+  }, [emitRoomEvent, players, currentPlayerId, gameType])
 
   const playAgain = useCallback(() => {
     clearInterval(countdownIntervalRef.current)

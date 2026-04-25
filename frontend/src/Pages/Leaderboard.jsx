@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 
 const GAME_OPTIONS = [
@@ -10,24 +11,19 @@ const GAME_OPTIONS = [
 ];
 
 const Leaderboard = () => {
-  // Dummy data (replace with API later)
-  const leaderboardRows = useMemo(
-    () => [
-      { id: "q1", game: "Quiz Battle", rank: 1, username: "AlexGamer", wins: 38, points: 2450 },
-      { id: "q2", game: "Quiz Battle", rank: 2, username: "QuizMaster", wins: 35, points: 2380 },
-      { id: "q3", game: "Quiz Battle", rank: 3, username: "BrainBoost", wins: 20, points: 2010 },
-      { id: "t1", game: "Typing Speed", rank: 1, username: "TypeFast", wins: 44, points: 2600 },
-      { id: "t2", game: "Typing Speed", rank: 2, username: "RapidFire", wins: 39, points: 2410 },
-      { id: "t3", game: "Typing Speed", rank: 3, username: "AceStudent", wins: 24, points: 2140 },
-      { id: "c1", game: "Coding Arena", rank: 1, username: "CodeNinja", wins: 32, points: 2320 },
-      { id: "c2", game: "Coding Arena", rank: 2, username: "LogicLegend", wins: 23, points: 2105 },
-      { id: "c3", game: "Coding Arena", rank: 3, username: "PixelPro", wins: 26, points: 2190 },
-      { id: "m1", game: "Memory Match", rank: 1, username: "MemoryKing", wins: 29, points: 2250 },
-      { id: "m2", game: "Memory Match", rank: 2, username: "SharpMind", wins: 21, points: 2055 },
-      { id: "m3", game: "Memory Match", rank: 3, username: "FocusFox", wins: 18, points: 1975 },
-    ],
-    []
-  );
+  const [leaderboardRows, setLeaderboardRows] = useState([]);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/users/leaderboard");
+        setLeaderboardRows(res.data);
+      } catch (error) {
+        console.error("Failed to fetch leaderboard", error);
+      }
+    };
+    fetchLeaderboard();
+  }, []);
 
   const [game, setGame] = useState("All Games");
   const [usernameQuery, setUsernameQuery] = useState("");

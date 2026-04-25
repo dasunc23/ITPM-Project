@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 
 const Achievements = () => {
@@ -13,17 +14,28 @@ const Achievements = () => {
   const currentUserLabel =
     loggedInUser?.name || loggedInUser?.username || loggedInUser?.email || "You";
 
-  // Dummy earned achievements (replace with API later)
-  const earned = useMemo(
-    () => [
-      { id: "e1", title: "Gold Streak", game: "Quiz Battle", badge: "🥇", earnedAt: "2026-03-20", earnedBy: "AlexGamer" },
-      { id: "e2", title: "Speed Typist", game: "Typing Speed", badge: "🥈", earnedAt: "2026-03-18", earnedBy: "QuizMaster" },
-      { id: "e3", title: "First Win", game: "Memory Match", badge: "🥉", earnedAt: "2026-03-12", earnedBy: "MemoryKing" },
-      { id: "e4", title: "Fast Thinker", game: "Quiz Battle", badge: "🥈", earnedAt: "2026-03-10", earnedBy: "CodeNinja" },
-      { id: "e5", title: "Bug Hunter", game: "Coding Arena", badge: "🥇", earnedAt: "2026-03-05", earnedBy: "PixelPro" },
-    ],
-    []
-  );
+  const [earned, setEarned] = useState([]);
+
+  useEffect(() => {
+    const fetchAchievements = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/achievements");
+        // Map backend data to match the UI's expected format
+        const formatted = res.data.map(a => ({
+          id: a._id,
+          title: a.title,
+          game: a.game,
+          badge: a.badge,
+          earnedAt: new Date(a.createdAt).toLocaleDateString(),
+          earnedBy: a.earnedBy
+        }));
+        setEarned(formatted);
+      } catch (err) {
+        console.error("Failed to fetch achievements", err);
+      }
+    };
+    fetchAchievements();
+  }, []);
 
   const games = useMemo(() => {
     const unique = Array.from(new Set(earned.map((e) => e.game)));
