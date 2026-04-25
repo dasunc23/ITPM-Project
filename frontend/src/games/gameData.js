@@ -141,68 +141,35 @@ export const codingChallenges = [
 ]
 
 export const memoryPairs = [
-  // Level 1 - Primary Keys (9 pairs total for the level)
-  { pairId: 'm1', left: 'Students', right: 'PK: student_id (UUID)', category: 'Primary Key' },
-  { pairId: 'm2', left: 'Modules', right: 'PK: module_code (VARCHAR)', category: 'Primary Key' },
-  { pairId: 'm3', left: 'Enrollments', right: 'PK: enrollment_id (SERIAL)', category: 'Primary Key' },
-  { pairId: 'm4', left: 'Results', right: 'PK: result_id (SERIAL)', category: 'Primary Key' },
-  { pairId: 'm5', left: 'Lecturers', right: 'PK: lecturer_id (UUID)', category: 'Primary Key' },
-  { pairId: 'm6', left: 'Schedules', right: 'PK: schedule_id (SERIAL)', category: 'Primary Key' },
-  { pairId: 'm7', left: 'Courses', right: 'PK: course_id (VARCHAR)', category: 'Primary Key' },
-  { pairId: 'm8', left: 'Departments', right: 'PK: dept_id (SERIAL)', category: 'Primary Key' },
-  { pairId: 'm9', left: 'Programs', right: 'PK: program_id (SERIAL)', category: 'Primary Key' },
-]
+  // ============ LEVEL 1 - Basic Schema (8 pairs) ============
+  { pairId: 'l1-1', left: 'Students', right: 'PK: student_id', category: 'Primary Key', level: 1 },
+  { pairId: 'l1-2', left: 'Modules', right: 'PK: module_code', category: 'Primary Key', level: 1 },
+  { pairId: 'l1-3', left: 'Enrollments', right: 'PK: enrollment_id', category: 'Primary Key', level: 1 },
+  { pairId: 'l1-4', left: 'Enrollments.student_id', right: 'FK → Students', category: 'Foreign Key', level: 1 },
+  { pairId: 'l1-5', left: 'Enrollments.module_code', right: 'FK → Modules', category: 'Foreign Key', level: 1 },
+  { pairId: 'l1-6', left: 'Students 1:N Enrollments', right: 'One Student → Many Enrollments', category: 'Relationship', level: 1 },
+  { pairId: 'l1-7', left: 'Modules 1:N Enrollments', right: 'One Module → Many Enrollments', category: 'Relationship', level: 1 },
+  { pairId: 'l1-8', left: 'Enrollments 1:1 Results', right: 'One Enrollment → One Result', category: 'Relationship', level: 1 },
 
-// Level configurations for Schema Memory Match
-export const memoryLevels = [
-  {
-    level: 1,
-    title: 'Primary Keys',
-    description: 'Match table names with their Primary Key definitions',
-    pairs: [
-      { pairId: 'l1-m1', left: 'Students', right: 'PK: student_id (UUID)', category: 'Primary Key' },
-      { pairId: 'l1-m2', left: 'Modules', right: 'PK: module_code (VARCHAR)', category: 'Primary Key' },
-      { pairId: 'l1-m3', left: 'Enrollments', right: 'PK: enrollment_id (SERIAL)', category: 'Primary Key' },
-      { pairId: 'l1-m4', left: 'Results', right: 'PK: result_id (SERIAL)', category: 'Primary Key' },
-      { pairId: 'l1-m5', left: 'Lecturers', right: 'PK: lecturer_id (UUID)', category: 'Primary Key' },
-      { pairId: 'l1-m6', left: 'Schedules', right: 'PK: schedule_id (SERIAL)', category: 'Primary Key' },
-      { pairId: 'l1-m7', left: 'Courses', right: 'PK: course_id (VARCHAR)', category: 'Primary Key' },
-      { pairId: 'l1-m8', left: 'Departments', right: 'PK: dept_id (SERIAL)', category: 'Primary Key' },
-      { pairId: 'l1-m9', left: 'Programs', right: 'PK: program_id (SERIAL)', category: 'Primary Key' },
-    ],
-  },
-  {
-    level: 2,
-    title: 'Foreign Keys',
-    description: 'Match tables with their Foreign Key relationships',
-    pairs: [
-      { pairId: 'l2-m1', left: 'Enrollments', right: 'FK: student_id → Students', category: 'Foreign Key' },
-      { pairId: 'l2-m2', left: 'Enrollments', right: 'FK: module_code → Modules', category: 'Foreign Key' },
-      { pairId: 'l2-m3', left: 'Results', right: 'FK: enrollment_id → Enrollments', category: 'Foreign Key' },
-      { pairId: 'l2-m4', left: 'Results', right: 'FK: module_code → Modules', category: 'Foreign Key' },
-      { pairId: 'l2-m5', left: 'Schedules', right: 'FK: lecturer_id → Lecturers', category: 'Foreign Key' },
-      { pairId: 'l2-m6', left: 'Schedules', right: 'FK: module_code → Modules', category: 'Foreign Key' },
-      { pairId: 'l2-m7', left: 'Modules', right: 'FK: dept_id → Departments', category: 'Foreign Key' },
-      { pairId: 'l2-m8', left: 'Courses', right: 'FK: dept_id → Departments', category: 'Foreign Key' },
-      { pairId: 'l2-m9', left: 'Students', right: 'FK: program_id → Programs', category: 'Foreign Key' },
-    ],
-  },
-  {
-    level: 3,
-    title: 'Relationships',
-    description: 'Match table relationships with their cardinality',
-    pairs: [
-      { pairId: 'l3-m1', left: 'Students 1:N Enrollments', right: 'One Student has Many Enrollments', category: 'Relationship' },
-      { pairId: 'l3-m2', left: 'Modules 1:N Enrollments', right: 'One Module has Many Enrollments', category: 'Relationship' },
-      { pairId: 'l3-m3', left: 'Enrollments 1:1 Results', right: 'One Enrollment has One Result', category: 'Relationship' },
-      { pairId: 'l3-m4', left: 'Lecturers 1:N Schedules', right: 'One Lecturer has Many Schedules', category: 'Relationship' },
-      { pairId: 'l3-m5', left: 'Modules 1:N Schedules', right: 'One Module has Many Schedules', category: 'Relationship' },
-      { pairId: 'l3-m6', left: 'Departments 1:N Modules', right: 'One Dept has Many Modules', category: 'Relationship' },
-      { pairId: 'l3-m7', left: 'Programs 1:N Students', right: 'One Program has Many Students', category: 'Relationship' },
-      { pairId: 'l3-m8', left: 'Courses 1:N Modules', right: 'One Course has Many Modules', category: 'Relationship' },
-      { pairId: 'l3-m9', left: 'Modules N:M Courses', right: 'Many Modules belong to Many Courses', category: 'Relationship' },
-    ],
-  },
+  // ============ LEVEL 2 - Advanced Schema (8 pairs) ============
+  { pairId: 'l2-1', left: 'Lecturers', right: 'PK: lecturer_id', category: 'Primary Key', level: 2 },
+  { pairId: 'l2-2', left: 'Schedules', right: 'PK: schedule_id', category: 'Primary Key', level: 2 },
+  { pairId: 'l2-3', left: 'Departments', right: 'PK: dept_id', category: 'Primary Key', level: 2 },
+  { pairId: 'l2-4', left: 'Schedules.lecturer_id', right: 'FK → Lecturers', category: 'Foreign Key', level: 2 },
+  { pairId: 'l2-5', left: 'Schedules.module_code', right: 'FK → Modules', category: 'Foreign Key', level: 2 },
+  { pairId: 'l2-6', left: 'Modules.dept_id', right: 'FK → Departments', category: 'Foreign Key', level: 2 },
+  { pairId: 'l2-7', left: 'Lecturers 1:N Schedules', right: 'One Lecturer → Many Schedules', category: 'Relationship', level: 2 },
+  { pairId: 'l2-8', left: 'Departments 1:N Modules', right: 'One Dept → Many Modules', category: 'Relationship', level: 2 },
+
+  // ============ LEVEL 3 - Complex Schema (8 pairs) ============
+  { pairId: 'l3-1', left: 'Courses', right: 'PK: course_id', category: 'Primary Key', level: 3 },
+  { pairId: 'l3-2', left: 'Assignments', right: 'PK: assignment_id', category: 'Primary Key', level: 3 },
+  { pairId: 'l3-3', left: 'Submissions', right: 'PK: submission_id', category: 'Primary Key', level: 3 },
+  { pairId: 'l3-4', left: 'Assignments.course_id', right: 'FK → Courses', category: 'Foreign Key', level: 3 },
+  { pairId: 'l3-5', left: 'Submissions.student_id', right: 'FK → Students', category: 'Foreign Key', level: 3 },
+  { pairId: 'l3-6', left: 'Submissions.assignment_id', right: 'FK → Assignments', category: 'Foreign Key', level: 3 },
+  { pairId: 'l3-7', left: 'Courses 1:N Assignments', right: 'One Course → Many Assignments', category: 'Relationship', level: 3 },
+  { pairId: 'l3-8', left: 'Assignments 1:N Submissions', right: 'One Assignment → Many Submissions', category: 'Relationship', level: 3 },
 ]
 
 export const typingRacePrompts = [
