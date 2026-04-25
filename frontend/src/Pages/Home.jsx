@@ -56,7 +56,7 @@ const Home = () => {
             <div className="flex items-center space-x-10">
               <div className="hidden md:flex space-x-8">
                 <Link to="/" className="hover:text-[#a855f7] transition-colors">Home</Link>
-                <a href="#games" className="hover:text-[#a855f7] transition-colors">Games</a>
+                <a href="/student-games" className="hover:text-[#a855f7] transition-colors">Games</a>
                 <a href="#leaderboard" className="hover:text-[#a855f7] transition-colors">Leaderboard</a>
                 {isLoggedIn && <Link to="/payment" className="hover:text-[#a855f7] transition-colors">Payment</Link>}
                 {userRole === "admin" && <Link to="/dashboard" className="hover:text-[#a855f7] transition-colors">Admin Dashboard</Link>}
