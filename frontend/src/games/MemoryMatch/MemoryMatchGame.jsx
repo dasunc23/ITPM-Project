@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import EndGameScreen from '../../Components/EndGameScreen'
 import GameShell from '../../Components/GameShell'
 import GameLobby from '../../Components/Lobby/GameLobby'
@@ -30,7 +30,7 @@ function MemoryMatchGame({ roomState, onEndGame }) {
     phase,
     countdown,
     players,
-    leaderboard,
+    leaderboard: displayLeaderboard,
     startGame,
     updateScore,
     endGame,
@@ -47,15 +47,15 @@ function MemoryMatchGame({ roomState, onEndGame }) {
   const totalPairs = 8
   const totalLevels = 3
 
-  const prepareBoard = (level = currentLevel) => {
+  const prepareBoard = useCallback((level = currentLevel) => {
     setCards(shuffleCardsForLevel(level))
     setFlipped([])
     setMatched([])
     setTimerKey((previous) => previous + 1)
     setStatus(`Level ${level} - Schema memory board is live.`)
-  }
+  }, [currentLevel, setStatus])
 
-  const goToNextLevel = () => {
+  const goToNextLevel = useCallback(() => {
     if (currentLevel < totalLevels) {
       const nextLevel = currentLevel + 1
       setCurrentLevel(nextLevel)
@@ -64,7 +64,7 @@ function MemoryMatchGame({ roomState, onEndGame }) {
     } else {
       endGame()
     }
-  }
+  }, [currentLevel, totalLevels, prepareBoard, endGame, setStatus])
 
   const handleCardClick = (card) => {
     if (phase !== 'playing') {
@@ -119,7 +119,7 @@ function MemoryMatchGame({ roomState, onEndGame }) {
     }
 
     return undefined
-  }, [phase, matched, cards, endGame, currentLevel, totalLevels])
+  }, [phase, matched.length, cards.length, endGame, currentLevel, totalLevels, goToNextLevel])
 
   const topBar = useMemo(
     () => (
